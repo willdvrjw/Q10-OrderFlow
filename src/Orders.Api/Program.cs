@@ -46,5 +46,6 @@ app.MapGet("/health/ready", async (OrdersDbContext db, CancellationToken ct) =>
         : Results.StatusCode(StatusCodes.Status503ServiceUnavailable));
 
 app.MapOrdersEndpoints();
+app.MapProductsEndpoints();
 app.MapHub<OrdersHub>("/hubs/orders");
 app.Run();

@@ -10,10 +10,16 @@ namespace Orders.Api.Application.Orders;
 public sealed class ProductCatalog
 {
     private readonly HashSet<string> _skus;
+    private readonly IReadOnlyList<ProductDefinition> _products;
 
-    private ProductCatalog(HashSet<string> skus) => _skus = skus;
+    private ProductCatalog(HashSet<string> skus, IReadOnlyList<ProductDefinition> products)
+    {
+        _skus = skus;
+        _products = products;
+    }
 
     public IReadOnlyCollection<string> Skus => _skus;
+    public IReadOnlyList<ProductDefinition> Products => _products;
 
     public bool Contains(string? sku) =>
         !string.IsNullOrWhiteSpace(sku) && _skus.Contains(sku.Trim());
@@ -48,7 +54,7 @@ public sealed class ProductCatalog
         if (skus.Count < 3)
             throw new InvalidDataException("La prueba requiere al menos tres productos en el catálogo.");
 
-        return new ProductCatalog(skus);
+        return new ProductCatalog(skus, products.AsReadOnly());
     }
 }
 
