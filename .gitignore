@@ -1,0 +1,45 @@
+
+# .NET - Archivos generados durante la compilación
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+# Pruebas y cobertura
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# Node.js y React
+node_modules/
+dist/
+.vite/
+.npm/
+*.tsbuildinfo
+
+# Variables de entorno y credenciales
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pfx
+*.p12
+*.key
+secrets.json
+
+# Editores
+.vscode/
+.idea/
+
+# Registros y archivos temporales
+*.log
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Datos locales de PostgreSQL
+pgdata/
+postgres-data/
