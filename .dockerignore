@@ -1,0 +1,22 @@
+# Contexto de compilación: no copiar datos locales, secretos ni dependencias.
+.git
+.gitignore
+.github
+.vscode
+.idea
+**/bin
+**/obj
+**/node_modules
+**/dist
+**/.vite
+**/TestResults
+**/coverage
+**/*.user
+**/*.suo
+**/*.log
+.env
+.env.*
+!**/.env.example
+README.md
+docs/
+k8s/
