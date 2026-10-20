@@ -34,7 +34,7 @@ public static class RabbitMqTransport
         {
             MessageId = eventId.ToString("D"),
             ContentType = "application/json",
-            DeliveryMode = 2
+            DeliveryMode = DeliveryModes.Persistent
         };
 
         await channel.BasicPublishAsync(
