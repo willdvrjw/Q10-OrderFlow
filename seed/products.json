@@ -1,0 +1,5 @@
+[
+  { "sku": "ABC-01", "nombre": "Cuaderno académico", "disponible": 100 },
+  { "sku": "XYZ-02", "nombre": "Bolígrafo profesional", "disponible": 25 },
+  { "sku": "TEST-03", "nombre": "Agenda de escritorio", "disponible": 3 }
+]
