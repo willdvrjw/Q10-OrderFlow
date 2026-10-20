@@ -28,6 +28,8 @@ public static class OrderValidator
 
         if (string.IsNullOrWhiteSpace(request.ClienteNombre))
             errors["clienteNombre"] = ["Ingresa el nombre del cliente."];
+        else if (request.ClienteNombre.Trim().Length > 160)
+            errors["clienteNombre"] = ["El nombre no puede superar 160 caracteres."];
 
         if (string.IsNullOrWhiteSpace(request.Sku) ||
             !catalogSkus.Any(sku => string.Equals(
@@ -37,6 +39,9 @@ public static class OrderValidator
         {
             errors["sku"] = ["Selecciona un SKU existente en el catálogo."];
         }
+
+        if (!string.IsNullOrWhiteSpace(request.Sku) && request.Sku.Trim().Length > 64)
+            errors["sku"] = ["El SKU no puede superar 64 caracteres."];
 
         if (request.Cantidad is < 1 or > 100)
             errors["cantidad"] = ["La cantidad debe ser un número entero entre 1 y 100."];

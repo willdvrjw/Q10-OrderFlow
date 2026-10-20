@@ -35,8 +35,12 @@ public sealed class Order
             throw new ArgumentException("El identificador del pedido es obligatorio.", nameof(id));
         if (string.IsNullOrWhiteSpace(clienteNombre))
             throw new ArgumentException("El nombre del cliente es obligatorio.", nameof(clienteNombre));
+        if (clienteNombre.Trim().Length > 160)
+            throw new ArgumentException("El nombre no puede superar 160 caracteres.", nameof(clienteNombre));
         if (string.IsNullOrWhiteSpace(sku))
             throw new ArgumentException("El SKU es obligatorio.", nameof(sku));
+        if (sku.Trim().Length > 64)
+            throw new ArgumentException("El SKU no puede superar 64 caracteres.", nameof(sku));
         if (cantidad is < 1 or > 100)
             throw new ArgumentOutOfRangeException(nameof(cantidad), "La cantidad debe estar entre 1 y 100.");
 

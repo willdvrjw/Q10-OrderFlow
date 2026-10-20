@@ -64,7 +64,6 @@ public static class OrdersEndpoints
         var orders = await db.Orders
             .AsNoTracking()
             .OrderByDescending(x => x.CreadoEn)
-            .Take(200)
             .ToListAsync(cancellationToken);
         return Results.Ok(orders.Select(ToResponse).ToArray());
     }
