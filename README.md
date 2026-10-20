@@ -1,58 +1,120 @@
 # Q10-OrderFlow
 
-Prueba técnica de arquitectura Fullstack para el proceso de Q10. Proyecto de comercio electrónico con procesamiento de pedidos y reserva asíncrona de inventario.
+Evaluación Fullstack: registro de pedidos, reserva asíncrona de inventario y panel de operaciones.
 
-> **Estado actual: ARQUITECTURA DEFINIDA, IMPLEMENTACIÓN PENDIENTE.** Este archivo no afirma que el sistema ya compile, que Docker Compose funcione o que sus pruebas hayan pasado. Las instrucciones ejecutables se documentarán y comprobarán cuando exista la implementación.
+> **Estado verificado hasta ahora:** Docker construyó los cinco servicios, PostgreSQL y RabbitMQ quedaron saludables, la API respondió, un pedido válido se confirmó y otro sin stock se rechazó sin descuento indebido. Las dos pruebas nuevas de idempotencia y concurrencia **aún deben ejecutarse**. También falta validar Kubernetes, los escenarios de fallos y un arranque desde copia limpia.
 
-## Objetivo de negocio
+## Arranque reproducible
 
-- Registrar pedidos desde un panel web.
-- Validar nombre, SKU existente y cantidad (1 a 100).
-- Crear cada pedido inicialmente en `Pending`.
-- Procesar la reserva de inventario de forma asíncrona.
-- Transicionar a `Confirmed` si hay stock y a `Rejected` si no lo hay.
-- Visualizar las transiciones sin depender exclusivamente de recargar manualmente la página.
-- Evitar descuentos repetidos por eventos duplicados y stock negativo ante concurrencia.
+Requisito del evaluador: Docker Engine y Docker Compose. No hace falta instalar .NET ni Node.js localmente porque los Dockerfiles compilan los servicios.
 
-## Stack seleccionado
+Desde la raíz del repositorio:
 
-- **Backend:** C# / ASP.NET Core 10 y .NET Worker Service 10.
-- **Base de datos:** PostgreSQL + Entity Framework Core / Npgsql, con dos bases de datos lógicas propiedad de servicios distintos.
-- **Mensajería:** RabbitMQ y librería oficial RabbitMQ.Client 7.x.
-- **Frontend:** React + TypeScript + Vite; estilos CSS modulares.
-- **Actualizaciones:** SignalR, con recuperación y polling periódico como respaldo.
-- **Contenedores:** Dockerfiles multi-stage + Docker Compose.
-- **Bonus infraestructura:** manifiestos de Kubernetes para Orders API.
-- **Pruebas:** xUnit con pruebas de dominio y de persistencia.
+~~~bash
+docker compose up
+~~~
 
-## Organización
+- Panel web: http://localhost:8080
+- Estado de API: http://localhost:8080/health/ready
+- Catálogo: http://localhost:8080/products
+- Pedidos: POST /orders, GET /orders, GET /orders/{id}
+- SignalR: /hubs/orders; polling de respaldo cada cinco segundos
 
-- `src/Orders.Api/`: API REST de pedidos, almacenamiento de estados, consumidor de resultados y publicación de eventos.
-- `src/Inventory.Worker/`: reservas, idempotencia y publicación de resultados.
-- `src/OrderFlow.Contracts/`: contratos públicos versionados de eventos, sin lógica de negocio.
-- `src/OrderFlow.Messaging/`: conexiones, publicador con confirmaciones y utilidades transversales de RabbitMQ.
-- `tests/OrderFlow.Tests/`: cinco tests backend sobre requisitos críticos.
-- `web/`: panel responsivo de operaciones.
-- `infra/postgres/`: inicialización automática de las dos bases de datos.
-- `infra/nginx/`: proxy web y compatibilidad con SignalR.
-- `k8s/`: bonus Kubernetes.
-- `seed/`: catálogo inicial estático de al menos tres productos.
-- `docs/`: decisiones, contrato de arquitectura, validación y guía de defensa.
+Si prefieres dejar el arranque en segundo plano:
 
-## Documentos de consulta
+~~~bash
+docker compose up -d --build
+docker compose ps
+~~~
 
-1. `docs/01_ARQUITECTURA.md` — arquitectura completa, modelo de datos, flujos y tratamiento de fallos.
-2. `docs/02_DECISIONES_TECNICAS.md` — justificación de cada decisión y sus trade-offs.
-3. `docs/03_PLAN_DE_VALIDACION.md` — aceptación, cinco tests críticos y pruebas manuales de resiliencia.
-4. `docs/04_GUIA_DE_DEFENSA.md` — fundamentos que el candidato debe comprender y poder modificar en vivo.
-5. `docs/05_CONVENCIONES_Y_CAMBIOS.md` — rutas y estándares de comentarios, código, configuración y documentación.
-6. `docs/06_MATRIZ_EVALUACION.md` — alineación uno a uno con los porcentajes y bonus de Q10.
-7. `docs/07_DISENO_INTERFAZ.md` — especificación visual y UX del panel.
+Los datos PostgreSQL y RabbitMQ usan volúmenes persistentes. No ejecutar un borrado de volúmenes si se desea conservar pedidos e inventario.
 
-## Alcance
+## Catálogo de demostración
 
-Se evita añadir autenticación, CI/CD o integraciones con Shopify, pues no son exigidas por la prueba y añadirían complejidad sin servir al flujo de reserva. El diseño del panel será visualmente cuidado y accesible sin sacrificar la robustez del backend.
+| SKU | Producto | Stock inicial |
+|---|---|---:|
+| ABC-01 | Cuaderno académico | 100 |
+| XYZ-02 | Bolígrafo profesional | 25 |
+| TEST-03 | Agenda de escritorio | 3 |
 
-## Pendiente antes de entregar
+Las semillas se insertan solo cuando los SKU faltan; no reinician cantidades ya consumidas.
 
-La implementación completa, compilación, `docker compose up`, cinco tests backend, simulaciones de fallos, repositorio Git con historial real y validación desde copia limpia. **No entregar mientras estos puntos no hayan sido verificados.**
+Ejemplo de petición:
+
+~~~bash
+curl -i -X POST http://localhost:8080/orders \
+  -H "Content-Type: application/json" \
+  -d '{"clienteNombre":"Prueba Q10","sku":"ABC-01","cantidad":2}'
+~~~
+
+El POST devuelve HTTP 201 con estado Pending, aunque la reserva aún no terminó. Inventory Worker determina Confirmed o Rejected por evento. Nombre vacío, SKU inexistente o cantidad fuera de 1 a 100 producen HTTP 400 con errores visibles para el frontend.
+
+## Cinco tests backend, un comando
+
+~~~bash
+docker compose --profile tests run --build --rm backend-tests
+~~~
+
+Este comando utiliza el perfil opcional de pruebas y no altera el arranque normal con docker compose up. Ejecuta tres tests de dominio y dos sobre PostgreSQL real:
+
+1. Validación de nombre, SKU y cantidad.
+2. Pedido creado en Pending, con transición única a Confirmed.
+3. Pedido rechazado como estado terminal.
+4. Idempotencia: reenviar OrderCreated con el mismo OrderId y EventId distinto no descuenta inventario dos veces.
+5. Concurrencia: dos reservas distintas sobre el mismo SKU no generan stock negativo y solo una puede descontar cuatro de cinco unidades.
+
+**Aislamiento:** las dos pruebas PostgreSQL crean una base temporal distinta por test y la eliminan al finalizar; no modifican los pedidos de demostración. Requieren permisos de crear y eliminar bases sobre el servidor PostgreSQL de desarrollo. Todavía falta confirmar su resultado desde Codespaces.
+
+Para compilar sin iniciar servicios, ejecutar dotnet build OrderFlow.slnx. Los tests de PostgreSQL requieren conexión administrativa de pruebas mediante ORDERFLOW_TEST_POSTGRES; el comando con perfil Docker la configura automáticamente.
+
+## Arquitectura
+
+- Orders API (.NET 10): endpoints, reglas y persistencia de pedidos, Outbox transaccional de OrderCreated y consumidor de resultados.
+- Inventory Worker (.NET 10): almacenamiento separado, reserva atómica condicionada por stock, clave única OrderId, Outbox de resultados.
+- RabbitMQ: colas durables, confirmaciones de publicación, ACK tras confirmar la transacción, DLQ para mensajes inválidos.
+- PostgreSQL: dos bases lógicas propiedad de servicios independientes, dentro de un contenedor.
+- React, TypeScript y Nginx: formulario, errores visibles, búsqueda, estados, SignalR y polling.
+
+No se promete exactly-once delivery sobre RabbitMQ; los consumidores deben tolerar reentregas y garantizar que el efecto de negocio sea único por OrderId.
+
+### Escenarios de fallo diseñados (pendientes de ensayo documentado)
+
+| Fallo | Comportamiento previsto |
+|---|---|
+| Broker caído | Pedido Pending y evento pendiente en Outbox; publicar tras recuperación. |
+| Worker caído | Pedido Pending hasta que el consumidor se recupere. |
+| Fallo antes de COMMIT | Transacción se revierte; mensaje se reentrega. |
+| Fallo tras COMMIT y antes de ACK | Reentrega sin descontar stock nuevamente. |
+| Fallo de SignalR | El navegador sigue consultando estados mediante polling. |
+
+## Trade-offs
+
+- EnsureCreated permite inicializar la demostración; para producción usaríamos migraciones versionadas.
+- Un solo contenedor PostgreSQL facilita reproducibilidad, pero no implica alta disponibilidad.
+- RabbitMQ.Client expone explícitamente reintentos, ACK y confirms, a cambio de más lógica propia.
+- El catálogo fijo simplifica el ejercicio; en producción tendría un servicio propietario de datos y sincronización.
+- Las variables de entorno incluyen credenciales de prueba por defecto para que docker compose up funcione sin configuración manual. No reutilizarlas en producción. El archivo .env local no se versiona.
+
+## Qué haría distinto con más tiempo
+
+Reemplazar inicialización de esquemas por migraciones; introducir privilegios mínimos y gestión de secretos; ampliar métricas, trazas, alarmas, políticas de DLQ y pruebas de fallos; administrar productos mediante un catálogo independiente y agregar controles de seguridad adecuados a producción.
+
+## Organización y defensa técnica
+
+- src/Orders.Api: dominio, validaciones, API, outbox, consumidor y SignalR.
+- src/Inventory.Worker: stock, transacciones, idempotencia y consumo de eventos.
+- src/OrderFlow.Contracts: contratos de eventos.
+- src/OrderFlow.Messaging: transporte y topología RabbitMQ.
+- tests/OrderFlow.Tests: cinco pruebas backend, dos con PostgreSQL.
+- web: panel React.
+- infra: inicialización de bases y proxy Nginx.
+- k8s: **bonus pendiente de implementar y validar**.
+- docs/01_ARQUITECTURA.md: flujo y fallos.
+- docs/02_DECISIONES_TECNICAS.md: decisiones y costes.
+- docs/03_PLAN_DE_VALIDACION.md: aceptación y evidencias.
+- docs/04_GUIA_DE_DEFENSA.md: fundamentos y rutas para modificar código.
+- docs/05_CONVENCIONES_Y_CAMBIOS.md: convenciones.
+- docs/06_MATRIZ_EVALUACION.md: criterios y ponderaciones.
+- docs/07_DISENO_INTERFAZ.md: UX accesible y responsive.
+
+**Pendiente antes de entregar:** aprobar las cinco pruebas, comprobar repetibilidad del arranque limpio, ensayar fallos de broker y worker, verificar frontend en navegador y completar el bonus de Kubernetes.
