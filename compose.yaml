@@ -82,6 +82,19 @@ services:
       orders-api:
         condition: service_started
 
+  # Cinco pruebas reales: tres de dominio y dos sobre PostgreSQL.
+  # No participa del arranque por defecto ni modifica las bases de los servicios.
+  backend-tests:
+    profiles: ["tests"]
+    build:
+      context: .
+      dockerfile: tests/OrderFlow.Tests/Dockerfile
+    environment:
+      ORDERFLOW_TEST_POSTGRES: Host=postgres;Port=5432;Database=postgres;Username=orderflow;Password=${ORDERFLOW_PG_PASSWORD:-orderflow_demo_local_only}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   rabbitmq_data:
