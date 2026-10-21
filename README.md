@@ -10,7 +10,7 @@ Evaluación Fullstack: registro de pedidos, reserva asíncrona de inventario y p
 - **Frontend:** React + TypeScript con validación, filtrado, SignalR y recuperación por polling. Dependencias fijadas en `web/package-lock.json` e instaladas con `npm ci`.
 - **Despliegue:** compilación, seed y creación/reserva comprobados en un clon independiente dentro del mismo Codespace; bonus Kubernetes ensamblado sintácticamente, no desplegado en un clúster.
 
-Los resultados y límites de verificación están documentados en [evidencias de validación](docs/09_EVIDENCIAS_VALIDACION.md).
+Los resultados y límites de verificación están documentados en [evidencias de validación](docs/09_EVIDENCIAS_VALIDACION.md) y en la [auditoría QA final según la rúbrica de Q10](docs/10_AUDITORIA_QA_ENTREGA.md).
 
 ## Empezar: ejecución reproducible y enlaces de acceso
 
@@ -222,5 +222,6 @@ Reemplazar inicialización de esquemas por migraciones; introducir privilegios m
 - docs/07_DISENO_INTERFAZ.md: UX accesible y responsive.
 - docs/08_KUBERNETES.md: alcance, decisiones y límites del bonus.
 - docs/09_EVIDENCIAS_VALIDACION.md: registro de resultados reales.
+- docs/10_AUDITORIA_QA_ENTREGA.md: matriz ponderada, trazabilidad y límites honestos de compatibilidad.
 
 **Alcance de validación:** el sistema se ejecutó desde una copia nueva dentro de GitHub Codespaces, con volúmenes independientes. El firewall específico de ese entorno requirió un ajuste local de conectividad entre contenedores. No se ha probado todavía en un host Docker diferente. La emulación responsive original se verificó a 530 × 710. Para la ampliación del inventario el usuario confirmó visualmente la vista móvil a 390 px sin aportar nueva captura; no equivale a un ensayo independiente de estrés con muchos SKU. Kubernetes se verificó mediante Kustomize, sin clúster. Ver `docs/09_EVIDENCIAS_VALIDACION.md`.
