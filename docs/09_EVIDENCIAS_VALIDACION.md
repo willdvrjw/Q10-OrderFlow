@@ -116,6 +116,9 @@ Desde el panel web se creó el pedido `ABC6E820` (prefijo visible), cliente `Pru
 
 **Fecha:** 20/10/2026, hora de Colombia. Se revisaron cuatro capturas de Chrome DevTools mostrando una ventana responsive de **530 × 710**, no 390 × 844. Se observan encabezado, banner, métricas en dos columnas, formulario y tarjetas de pedidos en una columna. Los estados y motivos de rechazo aparecen en líneas diferenciadas, después de los cambios de CSS. En las capturas no se aprecia desplazamiento horizontal, pero no se ha medido programáticamente el ancho de desbordamiento.
 
+
+**Resolución aceptada por el responsable de la entrega:** se cierra la revisión visual con las capturas a 530 × 710. La comprobación adicional a 390 × 844 se omite por decisión expresa; no se presenta como una prueba realizada ni como incumplimiento demostrado. No se planifican más retoques visuales en esta fase.
+
 Los mensajes rojos de la consola apuntan a la página de autenticación de `github.dev/pf-signin` y a un canal de mensajes de navegador/extensión; con estas capturas no se demuestra que se originen en el código React. Sigue **pendiente** comprobar el viewport 390 × 844 y confirmar el resultado en él.
 
 ## Pendiente de aprobación
