@@ -77,15 +77,15 @@ Para compilar sin iniciar servicios, ejecutar dotnet build OrderFlow.slnx. Los t
 
 No se promete exactly-once delivery sobre RabbitMQ; los consumidores deben tolerar reentregas y garantizar que el efecto de negocio sea único por OrderId.
 
-### Escenarios de fallo diseñados (pendientes de ensayo documentado)
+### Escenarios de fallo y alcance de su verificación
 
 | Fallo | Comportamiento previsto |
 |---|---|
-| Broker caído | Pedido Pending y evento pendiente en Outbox; publicar tras recuperación. |
-| Worker caído | Pedido Pending hasta que el consumidor se recupere. |
-| Fallo antes de COMMIT | Transacción se revierte; mensaje se reentrega. |
-| Fallo tras COMMIT y antes de ACK | Reentrega sin descontar stock nuevamente. |
-| Fallo de SignalR | El navegador sigue consultando estados mediante polling. |
+| Broker caído | Verificado: el pedido permaneció Pending y se confirmó tras recuperar el broker. |
+| Worker caído | Verificado: el pedido permaneció Pending y se confirmó tras reiniciar Inventory Worker. |
+| Fallo antes de COMMIT | Diseño transaccional implementado; no se forzó el fallo en ese instante. |
+| Fallo tras COMMIT y antes de ACK | Idempotencia con PostgreSQL comprobada; no se forzó una caída justo entre COMMIT y ACK. |
+| Fallo de SignalR | Verificado: con el WebSocket bloqueado, los indicadores se actualizaron mediante polling. |
 
 ## Trade-offs
 
@@ -116,5 +116,7 @@ Reemplazar inicialización de esquemas por migraciones; introducir privilegios m
 - docs/05_CONVENCIONES_Y_CAMBIOS.md: convenciones.
 - docs/06_MATRIZ_EVALUACION.md: criterios y ponderaciones.
 - docs/07_DISENO_INTERFAZ.md: UX accesible y responsive.
+- docs/08_KUBERNETES.md: alcance, decisiones y límites del bonus.
+- docs/09_EVIDENCIAS_VALIDACION.md: registro de resultados reales.
 
 **Pendiente antes de entregar:** revisión final de código/documentación y, si es posible, ejecución independiente en otro host Docker. Se comprobó una copia nueva dentro de Codespaces con el mismo motor Docker y se requirió una corrección temporal del firewall del entorno; no se afirma verificación universal. La emulación visual adicional a 390 px se omitió por decisión del candidato, después de validar 530 px. Ver `docs/09_EVIDENCIAS_VALIDACION.md`.
