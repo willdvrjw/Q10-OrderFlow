@@ -6,4 +6,7 @@ namespace Inventory.Worker.Infrastructure.Messaging;
 /// Canal de invalidación para el inventario: el navegador consulta GET /inventory
 /// para recuperar el dato autoritativo después de cada notificación.
 /// </summary>
-public sealed class InventoryUpdatesHub : Hub;
+public sealed class InventoryUpdatesHub : Hub
+{
+}
+
