@@ -139,7 +139,7 @@ export function OrdersList({ orders, loading, error, onRefresh, height, onRepeat
                       {order.estado === 'Rejected' && (
                         <button type="button" className="retry-order-button"
                           aria-label={'Preparar un pedido nuevo basado en ' + order.id}
-                          onClick={() => onRepeat(order)}>
+                          onClick={() => { setFilter('All'); onRepeat(order); }}>
                           Crear nuevo pedido
                         </button>
                       )}
