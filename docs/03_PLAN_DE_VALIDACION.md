@@ -6,19 +6,19 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 
 - [ ] `docker compose up` desde copia limpia levanta **frontend, Orders API, Inventory Worker, RabbitMQ, PostgreSQL y seed**, sin pasos manuales extra.
 - [ ] `GET /orders` responde por el puerto publicado del frontend y directamente en la red interna del API.
-- [ ] `POST /orders` responde 201 y devuelve `Pending`.
-- [ ] Pedido con suficiente stock termina en `Confirmed`.
-- [ ] Pedido con stock insuficiente termina en `Rejected` sin reducir stock.
+- [x] `POST /orders` responde 201 y devuelve `Pending` (comprobado vía REST).
+- [x] Pedido con suficiente stock termina en `Confirmed` (comprobado vía REST).
+- [x] Pedido con stock insuficiente termina en `Rejected` sin reducir stock (REST y PostgreSQL).
 - [ ] Nombre en blanco, SKU inexistente y cantidad fuera de 1..100 retornan 400 con errores legibles.
 - [ ] Los errores de formulario son visibles y comprensibles; no solo logs/console.
-- [ ] Un `OrderCreated` repetido no descuenta inventario dos veces.
-- [ ] Envíos concurrentes de cantidades incompatibles no producen stock negativo.
+- [x] Un `OrderCreated` repetido no descuenta inventario dos veces (prueba PostgreSQL aislada aprobada).
+- [x] Envíos concurrentes de cantidades incompatibles no producen stock negativo (prueba PostgreSQL aislada aprobada).
 - [ ] Si Inventory se detiene, el pedido permanece `Pending` y se procesa al recuperar el worker.
 - [ ] Si RabbitMQ se detiene, la API puede seguir registrando pedidos `Pending` y reenviando al recuperar broker.
 - [ ] El resultado persistido se recupera si hay una caída después de confirmar la transacción y antes del ACK.
 - [ ] SignalR actualiza la interfaz y polling restaura coherencia tras desconexión.
 - [ ] Los datos seed se crean automáticamente y reiniciar no restablece el stock consumido.
-- [ ] Las cinco pruebas backend se ejecutan con un solo comando documentado.
+- [x] Las cinco pruebas backend se ejecutan con un solo comando documentado (20/10/2026, cinco aprobadas).
 - [ ] Kubernetes incluye Deployment, Service, ConfigMap, probes y requests/limits de recursos.
 - [ ] Un evaluador puede clonar el proyecto y estar operando en menos de 10 minutos en un host con Docker disponible y recursos suficientes.
 - [ ] README y guía de defensa concuerdan con el código real, no con intenciones.
