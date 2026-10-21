@@ -18,7 +18,7 @@ public enum OrderProcessingOutcome
 /// El registro de OrderId es único: dos mensajes simultáneos del mismo pedido
 /// no pueden consumir dos veces la misma existencia.
 /// </summary>
-public sealed class OrderCreatedHandler(InventoryDbContext db)
+public sealed class OrderCreatedHandler(InventoryDbContext db, IInventoryChangeNotifier changes)
 {
     /// <summary>
     /// La inserción de processed_orders actúa como barrera transaccional por OrderId.
@@ -80,6 +80,11 @@ public sealed class OrderCreatedHandler(InventoryDbContext db)
 
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
+
+        // Notificar solo un descuento efectivamente confirmado. Un evento duplicado
+        // o rechazado no produjo un movimiento de existencias.
+        if (reserved)
+            await changes.NotifyChangedAsync(sku, ct);
 
         return reserved ? OrderProcessingOutcome.Reserved : OrderProcessingOutcome.Rejected;
     }
