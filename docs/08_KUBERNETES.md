@@ -55,7 +55,10 @@ mejoras y validarlas.
 4. Proveer `orderflow-orders-secrets` mediante gestor de secretos, no YAML
    versionado. El `ConfigMap` de Orders presupone DNS `rabbitmq`.
 5. Desplegar Inventory Worker con su base, secretos y configuración, análogos
-   a los de Orders; el Worker no necesita Service porque no recibe tráfico HTTP.
+   a los de Orders. La ampliación de inventario también expone HTTP en el
+   puerto interno 8081; si se incluye la consola de edición en Kubernetes,
+   se requiere un Service interno adicional para ese endpoint y controles de
+   autenticación/autorización. Estos recursos no forman parte del bonus de Orders.
 6. Ajustar la imagen y aplicar los manifiestos de Orders API; después desplegar
    el frontend/Nginx con el proxy a Orders API y una ruta Ingress con TLS.
 7. Comprobar probes, transiciones Pending/Confirmed/Rejected, idempotencia,
