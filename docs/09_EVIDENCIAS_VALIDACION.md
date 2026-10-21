@@ -366,6 +366,12 @@ La primera ejecución del perfil de siete pruebas pasó 3 de dominio, pero falla
 
 La rama de cambios permanece separada de `main` hasta que se completen las verificaciones finales de unicidad, persistencia tras reinicio y revisión de la consola.
 
+## Prueba manual de SKU duplicado — formulario
+
+**21/10/2026 (hora de Colombia):** al indicar al usuario que intentara volver a registrar un producto con el mismo SKU ya creado, el usuario confirmó «sí funciona, no permite guardar». Se comprobó así la validación preventiva de la interfaz de alta, incluyendo la condición de SKU existente en el catálogo que ve el navegador.
+
+**Límite de la evidencia:** no se ejecutó en esta comprobación un `POST /products` directo para verificar el rechazo HTTP 409 de Orders API, ni se adjuntó una consulta de saldos antes y después. La garantía de unicidad en backend y en PostgreSQL está implementada, pero no se atribuye al ensayo visual un resultado HTTP que no fue observado.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
