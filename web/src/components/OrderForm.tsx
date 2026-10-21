@@ -1,10 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { ApiError, createOrder } from '../lib/api';
 import type { FormErrors, Product } from '../types';
 
+export interface RepeatOrderPrefill {
+  clienteNombre: string;
+  sku: string;
+  cantidad: number;
+}
+
 interface Props {
   products: Product[];
+  prefill: RepeatOrderPrefill | null;
   catalogError: string | null;
   onReloadCatalog: () => void;
   onCreated: () => Promise<void>;
@@ -15,14 +22,25 @@ interface Props {
  * El backend vuelve a validar (nunca confiar solo en el navegador).
  * No se espera a confirmar inventario: el resultado inicial es Pending.
  */
-export function OrderForm({ products, catalogError, onReloadCatalog, onCreated }: Props) {
+export function OrderForm({ products, prefill, catalogError, onReloadCatalog, onCreated }: Props) {
   const [name, setName] = useState('');
   const [sku, setSku] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [message, setMessage] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [messageTone, setMessageTone] = useState<'success' | 'error' | 'info'>('info');
+
+  useEffect(() => {
+    if (!prefill) return;
+    // Solo se copian los campos; nada se envía hasta que el usuario confirme.
+    setName(prefill.clienteNombre);
+    setSku(prefill.sku);
+    setQuantity(String(prefill.cantidad));
+    setErrors({});
+    setMessageTone('info');
+    setMessage('Datos recuperados. Al guardar crearás un pedido nuevo; el pedido rechazado conservará su estado.');
+  }, [prefill]);
 
   const fieldError = (field: string) => errors[field]?.[0];
 
@@ -46,7 +64,6 @@ export function OrderForm({ products, catalogError, onReloadCatalog, onCreated }
 
     setErrors(nextErrors);
     setMessage(null);
-    setSuccess(false);
     if (Object.keys(nextErrors).length > 0) return;
 
     setBusy(true);
@@ -57,14 +74,14 @@ export function OrderForm({ products, catalogError, onReloadCatalog, onCreated }
         cantidad: amount,
       });
 
-      setSuccess(true);
+      setMessageTone('success');
       setMessage('Pedido ' + created.id.slice(0, 8).toUpperCase() + ' registrado. Estado inicial: pendiente de inventario.');
       setName('');
       setQuantity('1');
       setErrors({});
       await onCreated();
     } catch (error) {
-      setSuccess(false);
+      setMessageTone('error');
       if (error instanceof ApiError) {
         setErrors(error.errors);
         setMessage(error.message);
@@ -161,7 +178,7 @@ export function OrderForm({ products, catalogError, onReloadCatalog, onCreated }
         </div>
 
         {message && (
-          <div className={success ? 'notice success' : 'notice error'} role="status" aria-live="polite">
+          <div className={'notice ' + messageTone} role="status" aria-live="polite">
             {message}
           </div>
         )}
