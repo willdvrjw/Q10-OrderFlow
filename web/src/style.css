@@ -321,7 +321,7 @@ tbody tr:hover { background: #fafbfd; }
 .inventory-panel { margin-top: 24px; padding: 29px; }
 .inventory-heading { align-items: center; margin-bottom: 22px; }
 .inventory-heading h2 { font-size: 25px; }
-.inventory-heading p { max-width: 670px; font-size: 13px; line-height: 1.65; }
+.inventory-heading p { max-width: 670px; font-size: 13px; line-height: 1.65; text-align: center; }
 .inventory-layout {
   display: grid; grid-template-columns: minmax(0, 1.38fr) minmax(315px, .9fr);
   align-items: stretch; gap: 20px;
@@ -351,17 +351,25 @@ tbody tr:hover { background: #fafbfd; }
   background: linear-gradient(155deg, #ffffff, #fff8f3);
   box-shadow: 0 0 0 2px rgba(204, 106, 55, .11);
 }
+.stock-card-heading {
+  display: flex; align-items: baseline; gap: 7px;
+  width: 100%; min-height: 35px;
+}
 .stock-card-name {
-  display: block; min-height: 35px; font-size: 13px; line-height: 1.4;
+  flex: 0 1 auto; min-width: 0;
+  font-size: 13px; line-height: 1.4;
   font-weight: 600; color: #243c57;
 }
-.stock-card-sku { font-size: 10px; letter-spacing: .06em; color: #7d8ba0; }
+.stock-card-sku {
+  flex: 0 0 auto; white-space: nowrap;
+  font-size: 10px; letter-spacing: .06em; color: #7d8ba0;
+}
 .stock-card-bottom { display: flex; flex-direction: column; gap: 2px; margin-top: auto; padding-top: 14px; }
 .stock-card-bottom strong {
   font-size: 32px; line-height: 1.08; letter-spacing: -.04em; font-weight: 600; color: #192c45;
 }
 .stock-card-bottom span { color: #72849b; font-size: 11px; }
-.stock-note { grid-column: 1 / -1; margin: 3px 0 0; font-size: 11px; line-height: 1.55; color: #728197; }
+.stock-note { grid-column: 1 / -1; margin: 3px 0 0; font-size: 11px; line-height: 1.55; color: #728197; text-align: center; }
 .inventory-loading { grid-column: 1 / -1; color: var(--muted); padding: 24px 8px; font-size: 13px; }
 .inventory-editor {
   padding: 24px; border: 1px solid #e7ecf2; border-radius: 17px;
@@ -370,7 +378,7 @@ tbody tr:hover { background: #fafbfd; }
 }
 .inventory-editor h3 { font-size: 20px; letter-spacing: -.03em; margin: 0 0 7px; }
 .inventory-editor > p:not(.inventory-warning):not(.inventory-disclaimer) {
-  color: #6a7d93; font-size: 12px; line-height: 1.6; margin: 0 0 19px;
+  color: #6a7d93; font-size: 12px; line-height: 1.6; margin: 0 0 19px; text-align: center;
 }
 .inventory-editor label { font-size: 12px; color: #35465c; font-weight: 600; margin: 0 0 7px; }
 .inventory-editor select, .inventory-editor input {
@@ -390,9 +398,9 @@ tbody tr:hover { background: #fafbfd; }
 .inventory-editor .primary-button { margin-top: 0; }
 .inventory-warning {
   color: #854d0e; background: #fff9ee; border-radius: 9px; padding: 11px 12px;
-  font-size: 11px; line-height: 1.55; margin: 0 0 15px;
+  font-size: 11px; line-height: 1.55; margin: 0 0 15px; text-align: center;
 }
-.inventory-disclaimer { font-size: 11px; line-height: 1.5; color: #73869b; margin: 13px 0 0; }
+.inventory-disclaimer { font-size: 11px; line-height: 1.5; color: #73869b; margin: 13px 0 0; text-align: center; }
 .inventory-editor .notice { margin: 13px 0 0; }
 .inventory-error { margin-bottom: 18px; }
 
@@ -504,7 +512,7 @@ tbody tr:hover { background: #fafbfd; }
   .inventory-heading p { font-size: 12px; }
   .stock-list { grid-template-columns: 1fr; }
   .stock-card { min-height: 117px; padding: 15px 17px; }
-  .stock-card-name { min-height: 0; }
+  .stock-card-heading { min-height: 0; }
   .stock-card-bottom { padding-top: 9px; }
   .stock-card-bottom strong { font-size: 26px; }
   .inventory-editor { padding: 18px 16px; }
