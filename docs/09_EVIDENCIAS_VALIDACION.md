@@ -145,6 +145,14 @@ kind: Deployment
 
 **Resultado verificado:** los manifiestos se ensamblan mediante Kustomize y contienen los tres tipos de recursos exigidos. **Límite:** este comando no consulta un servidor de Kubernetes, no valida su admisión por el API server ni demuestra que los contenedores se desplieguen en un clúster. El enunciado no exige clúster operativo.
 
+## SignalR — conexión WebSocket comprobada
+
+En la consola de Chrome DevTools, bajo **Red → Socket**, se observó una solicitud `orders?id=...` correspondiente al Hub de Orders, con **estado HTTP 101** y **tipo websocket**. La duración se muestra como `Pendiente` porque la conexión permanece abierta.
+
+**Aprobado:** negociación y establecimiento de WebSocket desde el frontend alojado en Codespaces.
+
+**Todavía pendiente:** inspeccionar un frame `ordersChanged` recibido tras una transición de estado y diferenciar su efecto del polling REST de respaldo. El HTTP 101, por sí solo, no demuestra entrega de mensajes de aplicación.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
