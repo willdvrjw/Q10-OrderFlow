@@ -20,7 +20,7 @@ Cada porcentaje corresponde a la sección «Cómo evaluamos» del PDF. Los bonus
 
 ## Requisitos explícitamente fuera de alcance
 
-No construir autenticación/autorización, CI/CD, cluster Kubernetes funcional, alta cobertura de tests ni diseño visual suntuoso. Una interfaz profesional y accesible es valiosa mientras no comprometa entrega ni estabilidad.
+No construir CI/CD, un clúster Kubernetes funcional, alta cobertura de tests ni funcionalidades empresariales ajenas a la prueba. Una interfaz profesional y accesible es valiosa mientras no comprometa entrega ni estabilidad.
 
 ## Criterio para aprobar la entrega
 
