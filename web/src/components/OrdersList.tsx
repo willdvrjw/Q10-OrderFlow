@@ -9,6 +9,7 @@ interface Props {
   error: string | null;
   onRefresh: () => void;
   height?: number;
+  onRepeat: (order: Order) => void;
 }
 
 const filters: { value: StatusFilter; label: string }[] = [
@@ -39,7 +40,7 @@ function formatDate(value: string) {
  * Tabla de lectura y filtros locales. Los estados se consultan desde Orders API;
  * el frontend nunca decide si una reserva se confirma o rechaza.
  */
-export function OrdersList({ orders, loading, error, onRefresh, height }: Props) {
+export function OrdersList({ orders, loading, error, onRefresh, height, onRepeat }: Props) {
   const [filter, setFilter] = useState<StatusFilter>('All');
   const [search, setSearch] = useState('');
 
@@ -134,6 +135,13 @@ export function OrdersList({ orders, loading, error, onRefresh, height }: Props)
                       <StatusBadge status={order.estado} />
                       {order.estado === 'Rejected' && order.motivoRechazo && (
                         <span className="reason" title={order.motivoRechazo}>{order.motivoRechazo}</span>
+                      )}
+                      {order.estado === 'Rejected' && (
+                        <button type="button" className="retry-order-button"
+                          aria-label={'Preparar un pedido nuevo basado en ' + order.id}
+                          onClick={() => onRepeat(order)}>
+                          Crear nuevo pedido
+                        </button>
                       )}
                     </td>
                   </tr>
