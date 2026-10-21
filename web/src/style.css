@@ -251,36 +251,54 @@ tbody tr:hover { background: #fafbfd; }
   .header-inner { min-height: 74px; }
   .brand-icon { width: 40px; height: 40px; }
   .brand-title { font-size: 21px; }
-  .brand-subtitle { font-size: 8px; }
+  .brand-subtitle { font-size: 9px; }
   .connection { padding: 9px; font-size: 0; }
   .connection-dot { flex-shrink: 0; }
   .main-content { padding-top: 16px; }
   .hero { padding: 26px 23px; min-height: 210px; }
   .hero h1 { font-size: 32px; }
-  .hero p { font-size: 12px; line-height: 1.65; }
+  .hero p { font-size: 13px; line-height: 1.65; }
   .hero-illustration { display: none; }
   .metrics { gap: 10px; margin: 13px 0 16px; }
   .metric-card { padding: 17px 15px; border-radius: 14px; }
-  .metric-head { font-size: 11px; }
+  .metric-head { font-size: 12px; }
   .metric-symbol { width: 25px; height: 25px; font-size: 16px; }
   .metric-value { font-size: 31px; }
-  .metric-detail { font-size: 10px; }
+  .metric-detail { font-size: 11px; }
   .panel { padding: 20px 16px; border-radius: 16px; }
   .panel-heading { margin-bottom: 22px; }
   .panel-heading h2 { font-size: 19px; }
   .filter-tabs { justify-content: center; }
-  .filter-tab { padding: 9px 10px; }
+  .filter-tab { padding: 9px 10px; font-size: 12px; }
   .orders-toolbar { gap: 12px; }
   table, thead, tbody, tr, td { display: block; width: 100%; }
   thead { display: none; }
   tbody { display: grid; gap: 11px; }
   tbody tr { border: 1px solid #edf0f4; padding: 10px 13px; border-radius: 12px; }
   tbody tr:hover { background: #fffaf7; }
-  td { display: flex; justify-content: space-between; gap: 20px; border: 0; padding: 7px 0; text-align: right; }
-  td::before { content: attr(data-label); flex-shrink: 0; color: #94a3b8; font-size: 10px; font-weight: 700; }
-  td:last-child { align-items: center; }
-  td .reason { text-align: right; }
-  .site-footer { font-size: 9px; }
+  td { display: flex; justify-content: space-between; gap: 12px; border: 0; padding: 7px 0; text-align: right; font-size: 12px; }
+  td::before { content: attr(data-label); flex-shrink: 0; color: #64748b; font-size: 11px; font-weight: 700; }
+  /* Estado y motivo ocupan filas distintas; no se comprimen en una sola línea. */
+  td:last-child {
+    display: grid;
+    grid-template-columns: minmax(90px, 1fr) auto;
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 6px;
+  }
+  td:last-child::before { grid-column: 1; grid-row: 1; text-align: left; }
+  td:last-child .status-badge { grid-column: 2; grid-row: 1; justify-self: end; }
+  td:last-child .reason { grid-column: 1 / -1; grid-row: 2; width: 100%; max-width: none; margin: 0; text-align: right; }
+  .eyebrow { font-size: 11px; }
+  .panel-heading p { font-size: 13px; }
+  .form-panel label { font-size: 13px; }
+  .form-panel input, .form-panel select { font-size: 14px; }
+  .form-panel .field-error, .form-panel .field-hint, .form-footer p { font-size: 12px; }
+  .search-field input { font-size: 12px; }
+  .order-id, .sku-code, .date-cell { font-size: 12px; }
+  .quantity-note, .status-badge, .reason { font-size: 11px; }
+  .panel-footer { font-size: 11px; }
+  .site-footer { font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
