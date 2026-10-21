@@ -10,7 +10,7 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [x] Pedido con suficiente stock termina en `Confirmed` (comprobado vía REST).
 - [x] Pedido con stock insuficiente termina en `Rejected` sin reducir stock (REST y PostgreSQL).
 - [x] Nombre en blanco, SKU inexistente y cantidad fuera de 1..100 retornan 400 con errores legibles (probado vía HTTP; 3 respuestas application/problem+json).
-- [ ] Los errores de formulario son visibles y comprensibles; no solo logs/console.
+- [x] Los errores de formulario son visibles y comprensibles (captura: nombre y SKU vacíos con mensajes bajo los campos).
 - [x] Un `OrderCreated` repetido no descuenta inventario dos veces (prueba PostgreSQL aislada aprobada).
 - [x] Envíos concurrentes de cantidades incompatibles no producen stock negativo (prueba PostgreSQL aislada aprobada).
 - [x] Si Inventory se detiene, el pedido permanece `Pending` y se procesa al recuperar el worker (pedido f069d769, comprobado en Codespaces por REST y Compose).
