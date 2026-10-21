@@ -43,6 +43,7 @@ services:
       ASPNETCORE_URLS: http://+:8080
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__Orders: Host=postgres;Port=5432;Database=orderflow_orders;Username=orderflow;Password=${ORDERFLOW_PG_PASSWORD:-orderflow_demo_local_only}
+      Inventory__BaseUrl: http://inventory-worker:8081
       RabbitMq__HostName: rabbitmq
       RabbitMq__Port: "5672"
       RabbitMq__UserName: orderflow
