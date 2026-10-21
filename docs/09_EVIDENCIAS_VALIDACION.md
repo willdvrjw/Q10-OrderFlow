@@ -358,6 +358,14 @@ La primera ejecución del perfil de siete pruebas pasó 3 de dominio, pero falla
 
 **Conclusión limitada:** la resolución dinámica de upstreams solucionó el problema de acceso HTTP reproducido tras recrear contenedores. No se han vuelto a probar en esta comprobación las conexiones WebSocket SignalR ni el alta de un producto desde el panel; ambas permanecen pendientes. La rama no se ha integrado en `main`.
 
+## Alta de producto, modificación de stock y pedido — prueba manual comunicada
+
+**Fecha:** 21/10/2026 (hora de Colombia). Después de restablecer las tres rutas HTTP a 200, el usuario comunicó que **creó un producto nuevo desde la consola**, y lo encontró en el selector de creación de pedidos y en el de actualización de existencias. Posteriormente **ajustó el inventario de ese producto, creó un pedido y observó la actualización de existencias**. Confirmó expresamente que el flujo funcionó correctamente.
+
+**Alcance de evidencia:** confirmación funcional del usuario. No se adjuntaron en este mensaje capturas, respuestas HTTP, SKU exacto ni saldos antes/después; no se deben presentar esos números como comprobados. Los códigos y la estructura actual de la rama implementan unicidad del SKU en el formulario, la API (normalización a mayúsculas, conflicto HTTP 409 con semilla y catálogo dinámico) y las claves primarias por SKU de PostgreSQL en ambos servicios. Las siete pruebas automatizadas pasaron previamente, incluidas dos nuevas de idempotencia y protección frente a SKU existente, pero **sigue pendiente un ensayo explícito de HTTP 409 usando un SKU dinámico ya registrado**.
+
+La rama de cambios permanece separada de `main` hasta que se completen las verificaciones finales de unicidad, persistencia tras reinicio y revisión de la consola.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
