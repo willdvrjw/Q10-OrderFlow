@@ -173,6 +173,14 @@ En Chrome DevTools → **Condiciones de la solicitud**, se activó el bloqueo po
 
 **Conclusión verificada:** el panel continúa consultando Orders API mediante polling REST y recupera un estado nuevo aun cuando SignalR está bloqueado. La prueba no mide la latencia exacta de recuperación ni implica que el servicio WebSocket deba permanecer deshabilitado. Al terminar se debe desactivar el bloqueo de DevTools.
 
+## Restauración de SignalR después del ensayo de bloqueo
+
+**Fecha observada:** 20/10/2026, hora de Colombia.
+
+Finalizado el ensayo de polling, se desactivó en DevTools la casilla **Habilitar el bloqueo y la limitación** y se recargó la aplicación. La captura muestra **0 solicitudes afectadas**, conexión WebSocket en estado **101** y el indicador superior de conexión en verde. El panel conserva **7 pedidos: 6 confirmados, 1 rechazado y 0 pendientes**.
+
+La funcionalidad WebSocket quedó restaurada y el sistema regresó al estado de operación normal. No se han reinicializado ni eliminado los volúmenes de bases de datos durante esta comprobación.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
