@@ -10,6 +10,7 @@ namespace Orders.Api.Infrastructure.Persistence;
 public sealed class OrdersDbContext(DbContextOptions<OrdersDbContext> options) : DbContext(options)
 {
     public DbSet<Order> Orders => Set<Order>();
+    public DbSet<CatalogProduct> CatalogProducts => Set<CatalogProduct>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     public DbSet<InboxMessage> InboxMessages => Set<InboxMessage>();
 
@@ -25,6 +26,14 @@ public sealed class OrdersDbContext(DbContextOptions<OrdersDbContext> options) :
             entity.Property(x => x.Estado).HasConversion<string>().IsRequired().HasMaxLength(16);
             entity.Property(x => x.MotivoRechazo).HasMaxLength(500);
             entity.HasIndex(x => x.CreadoEn);
+        });
+
+        modelBuilder.Entity<CatalogProduct>(entity =>
+        {
+            entity.ToTable("catalog_products");
+            entity.HasKey(x => x.Sku);
+            entity.Property(x => x.Sku).HasColumnName("sku").HasMaxLength(64);
+            entity.Property(x => x.Nombre).HasColumnName("nombre").HasMaxLength(160).IsRequired();
         });
 
         modelBuilder.Entity<OutboxMessage>(entity =>
