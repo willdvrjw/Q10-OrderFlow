@@ -15,6 +15,7 @@ export function useOrdersLive() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
+  const dismissError = useCallback(() => setError(null), []);
 
   const refresh = useCallback(async (silent = false): Promise<void> => {
     try {
@@ -62,5 +63,5 @@ export function useOrdersLive() {
     };
   }, [refresh]);
 
-  return { orders, loading, error, connected, refresh };
+  return { orders, loading, error, connected, refresh, dismissError };
 }
