@@ -65,7 +65,9 @@ export function createOrder(body: CreateOrderRequest): Promise<Order> {
 
 /** Estas rutas van al servicio Inventory a través de Nginx, no a Orders. */
 export function getInventory(): Promise<InventoryStock[]> {
-  return request<InventoryStock[]>('/inventory');
+  // Reintentar un rechazado requiere el saldo del servidor, no una copia
+  // almacenada por el navegador en caché.
+  return request<InventoryStock[]>('/inventory', { cache: 'no-store' });
 }
 
 export function adjustInventory(body: InventoryAdjustmentRequest): Promise<InventoryAdjustmentResponse> {
