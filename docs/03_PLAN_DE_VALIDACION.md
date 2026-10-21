@@ -18,7 +18,7 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [ ] El resultado persistido se recupera si hay una caída después de confirmar la transacción y antes del ACK.
 - [x] Creación real desde formulario web y actualización automática de tabla y contadores sin recarga manual (ABC6E820).
 - [ ] SignalR actualiza la interfaz y polling restaura coherencia tras desconexión.
-- [ ] Los datos seed se crean automáticamente y reiniciar no restablece el stock consumido.
+- [x] Los datos seed se crean automáticamente y reiniciar no restablece el stock consumido (cinco pedidos idénticos antes y después; diff de inventario vacío).
 - [x] Las cinco pruebas backend se ejecutan con un solo comando documentado (20/10/2026, cinco aprobadas).
 - [ ] Kubernetes incluye Deployment, Service, ConfigMap, probes y requests/limits de recursos.
 - [ ] Un evaluador puede clonar el proyecto y estar operando en menos de 10 minutos en un host con Docker disponible y recursos suficientes.
