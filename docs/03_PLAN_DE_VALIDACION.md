@@ -66,7 +66,7 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [ ] Verificar vía REST la transición `Pending → Confirmed` del SKU nuevo, su descuento exacto, el rechazo por falta de existencias sin stock negativo y la notificación por SignalR.
 - [x] Comprobar manualmente que **Agregar producto nuevo** no permite guardar un SKU duplicado: el usuario confirmó expresamente que el formulario impide el guardado.
 - [ ] Comprobar con `POST /products` directamente que un SKU existente recibe `409 Conflict` sin duplicarlo ni resetear las unidades; la repetición idempotente interna de Inventory está cubierta por test PostgreSQL.
-- [ ] Reiniciar contenedores sin `down -v` y confirmar que producto, nombre, SKU, pedidos e inventario persisten; incluir el mismo SKU en las dos APIs.
+- [x] Reiniciar sin `down -v` los servicios `orders-api`, `inventory-worker` y `web`, comparando instantáneas reales antes/después de `GET /products`, `GET /inventory` y `GET /orders`: los **tres archivos resultaron idénticos** (`SIN CAMBIOS - CORRECTO`). El catálogo conserva el nuevo producto **Foto Retablos Personalizados (`FRP`)** junto a los tres SKU de la semilla; cinco contenedores activos después del reinicio.
 - [ ] Crear sucesivos SKU de prueba y comprobar que las tarjetas **desbordan únicamente su zona con scroll**, sin superar la altura del editor derecho en escritorio y móvil; botón de alta accesible debajo de las tarjetas.
 - [ ] Revisar alineación a la izquierda de «Selecciona un producto y registra un ingreso o define su cantidad total».
 - [ ] Volver a inspeccionar Problemas de Chrome: el buscador de pedidos ya incluye `id`/`name` y los campos de Inventory también; comprobar la desaparición de esa advertencia con recarga nueva.
