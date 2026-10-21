@@ -29,6 +29,8 @@ Esta guía describe **el código efectivamente incorporado en el repositorio**, 
 
 **¿Y si dos reservas llegan simultáneamente?** PostgreSQL ejecuta un UPDATE condicionado a `disponible >= cantidad`, de modo que las operaciones concurrentes no pueden consumir más unidades que las disponibles. Se probó con dos DbContext y transacciones separadas.
 
+**¿Cómo se crean nuevos SKU sin romper la independencia?** Orders valida unicidad, solicita a Inventory crear existencias iniciales de modo idempotente y después persiste el nombre en su catálogo. Si falla entre los dos pasos, una repetición idéntica puede completar el alta sin restablecer stock. Este HTTP interno solo es administrativo; **los pedidos continúan usando RabbitMQ**. No se promete transacción distribuida.
+
 **¿Qué sucede si RabbitMQ está caído?** Orders sigue admitiendo pedidos y almacenando eventos. Al regresar el broker, el despachador reintenta y el pedido termina de procesarse. Esto se observó en pruebas reales.
 
 **¿Qué sucede si el Worker está detenido?** El pedido queda en `Pending`, el broker conserva el evento y el procesamiento continúa al reanudar el Worker. También se verificó.
@@ -60,6 +62,7 @@ Esta guía describe **el código efectivamente incorporado en el repositorio**, 
 | Cambiar POST, GET o respuesta | `src/Orders.Api/Endpoints/OrdersEndpoints.cs` | curl y tabla del frontend |
 | Cambiar estados o transiciones | `src/Orders.Api/Domain/OrderStatus.cs`, `src/Orders.Api/Domain/Order.cs` | Tests de dominio y flujo |
 | Cambiar catálogo o cantidades iniciales | `seed/products.json`; carga en `src/Orders.Api/Application/Orders/ProductCatalog.cs` y `src/Inventory.Worker/Infrastructure/Persistence/InventoryDatabaseInitializer.cs` | Arranque con volumen nuevo; no sobrescribir stock consumido |
+| Registrar nuevos productos dinámicos y validar SKU único | `src/Orders.Api/Endpoints/ProductsEndpoints.cs`, `src/Orders.Api/Application/Orders/InventoryProductProvisioner.cs`, `src/Inventory.Worker/Application/InventoryProductRegistrationService.cs`, `web/src/components/NewProductForm.tsx` | POST /products: HTTP 201 o 409; verificar GET /products, GET /inventory, reinicio y prueba de idempotencia PostgreSQL |
 | Cambiar contratos de eventos | `src/OrderFlow.Contracts/Events/OrderEvents.cs` | Compilar productores y consumidores; verificar serialización |
 | Cambiar rutas o colas RabbitMQ | `src/OrderFlow.Messaging/RabbitMqTopology.cs` | Consumo/publicación y DLQ |
 | Cambiar confirmación de publicación | `src/OrderFlow.Messaging/RabbitMqTransport.cs` | Broker disponible / indisponible |
