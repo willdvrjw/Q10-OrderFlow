@@ -38,7 +38,8 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [ ] Comprobar el mensaje `inventoryChanged` generado específicamente por una reserva nueva.
 - [ ] Comprobar recuperación de existencias por polling de 10 s al bloquear exclusivamente SignalR de inventario.
 - [ ] Comprobar que «Crear nuevo pedido» **permanece deshabilitado** cuando la cantidad de existencias es menor que la solicitada, y se habilita automáticamente tras una reposición suficiente.
-- [ ] Comprobar que tanto al pulsar el botón del rechazado como antes de guardar el formulario se vuelve a consultar GET /inventory sin caché; si disminuyó el saldo o falla la consulta, no se crea un nuevo pedido.
+- [x] Comprobar bloqueo del envío desde un rechazado cuando la cantidad solicitada excede el stock: TEST-03 solicitó 5 con 4 disponibles; error visible y 8 pedidos conservados. La implementación usa GET /inventory con `cache: no-store` antes del POST.
+- [ ] Comprobar el escenario de fallo de consulta y la habilitación/deshabilitación del botón al variar el stock, y crear finalmente una reserva exitosa con cantidad disponible.
 - [ ] Confirmar que el pedido `Rejected` original conserva su estado y que solo aparece un identificador nuevo al guardar explícitamente con stock suficiente.
 - [ ] Comprobar que el formulario normal sigue aceptando un pedido válido insuficiente con HTTP 201 Pending, para que Inventory lo resuelva a Rejected según Q10.
 - [ ] Fusionar la rama de cambios en `main` solamente después de compilar y comprobar el flujo.
