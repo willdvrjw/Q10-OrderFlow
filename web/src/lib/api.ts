@@ -52,6 +52,11 @@ export function getOrders(): Promise<Order[]> {
   return request<Order[]>('/orders');
 }
 
+/** Consulta el registro real del pedido de origen antes de repetir un rechazado. */
+export function getOrder(id: string): Promise<Order> {
+  return request<Order>('/orders/' + encodeURIComponent(id), { cache: 'no-store' });
+}
+
 export function getProducts(): Promise<Product[]> {
   return request<Product[]>('/products');
 }
