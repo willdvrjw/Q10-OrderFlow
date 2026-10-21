@@ -37,7 +37,10 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [x] Comprobar señalización WebSocket de inventario: conexiones `/hubs/inventory` y `/hubs/orders` con HTTP 101; el usuario confirmó recepción del mensaje `inventoryChanged` al ajustar existencias desde una segunda pestaña, sin recargar la receptora. Confirmación comunicada, sin captura del frame final.
 - [ ] Comprobar el mensaje `inventoryChanged` generado específicamente por una reserva nueva.
 - [ ] Comprobar recuperación de existencias por polling de 10 s al bloquear exclusivamente SignalR de inventario.
-- [ ] Verificar que un pedido `Rejected` conserva su estado tras reponer stock y que «Crear nuevo pedido» únicamente precarga otro formulario sin enviarlo automáticamente.
+- [ ] Comprobar que «Crear nuevo pedido» **permanece deshabilitado** cuando la cantidad de existencias es menor que la solicitada, y se habilita automáticamente tras una reposición suficiente.
+- [ ] Comprobar que tanto al pulsar el botón del rechazado como antes de guardar el formulario se vuelve a consultar GET /inventory sin caché; si disminuyó el saldo o falla la consulta, no se crea un nuevo pedido.
+- [ ] Confirmar que el pedido `Rejected` original conserva su estado y que solo aparece un identificador nuevo al guardar explícitamente con stock suficiente.
+- [ ] Comprobar que el formulario normal sigue aceptando un pedido válido insuficiente con HTTP 201 Pending, para que Inventory lo resuelva a Rejected según Q10.
 - [ ] Fusionar la rama de cambios en `main` solamente después de compilar y comprobar el flujo.
 
 ## Cinco pruebas backend implementadas y verificadas
