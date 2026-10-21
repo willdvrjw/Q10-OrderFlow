@@ -3,12 +3,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { ApiError, adjustInventory, getInventory } from '../lib/api';
 import { FlashNotice } from './FlashNotice';
+import { NewProductForm } from './NewProductForm';
 import type { InventoryOperation, InventoryStock, Product } from '../types';
 
 interface Props {
   products: Product[];
   onStockUpdate: (stock: InventoryStock[]) => void;
   onStockUnavailable: () => void;
+  onProductCreated: () => Promise<void>;
 }
 type Feedback = { kind: 'success' | 'error'; text: string } | null;
 
@@ -23,7 +25,7 @@ function stockStatus(available: number) {
  * o ajuste confirmado; GET /inventory sigue siendo la fuente de verdad.
  * El polling mantiene actualizado el panel si se pierde la conexión en vivo.
  */
-export function InventoryManager({ products, onStockUpdate, onStockUnavailable }: Props) {
+export function InventoryManager({ products, onStockUpdate, onStockUnavailable, onProductCreated }: Props) {
   const [stock, setStock] = useState<InventoryStock[]>([]);
   const [selectedSku, setSelectedSku] = useState('');
   const [operation, setOperation] = useState<InventoryOperation>('agregar');
@@ -34,6 +36,22 @@ export function InventoryManager({ products, onStockUpdate, onStockUnavailable }
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const lastRequest = useRef(0);
+  const editorRef = useRef<HTMLFormElement>(null);
+  const stockScrollRef = useRef<HTMLDivElement>(null);
+  const [editorHeight, setEditorHeight] = useState<number>();
+  const [showCreate, setShowCreate] = useState(false);
+
+  // La altura de la columna de productos sigue a la del editor; solamente
+  // la lista izquierda se desplaza cuando aumentan los SKU.
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const observer = new ResizeObserver(() => {
+      setEditorHeight(Math.ceil(editor.getBoundingClientRect().height));
+    });
+    observer.observe(editor);
+    return () => observer.disconnect();
+  }, []);
 
   const refresh = useCallback(async () => {
     const requestId = ++lastRequest.current;
@@ -129,6 +147,20 @@ export function InventoryManager({ products, onStockUpdate, onStockUnavailable }
 
   const productName = (sku: string) =>
     products.find(product => product.sku === sku)?.nombre ?? 'Producto ' + sku;
+
+  async function handleProductCreated(sku: string, nombre: string) {
+    // Refrescar tanto el catálogo de Orders (para nuevos pedidos) como
+    // el inventario del Worker; mostrar y seleccionar el nuevo SKU.
+    await onProductCreated();
+    await refresh();
+    setSelectedSku(sku);
+    setShowCreate(false);
+    setFeedback({
+      kind: 'success',
+      text: 'Producto ' + nombre + ' (' + sku +
+        ') registrado. Ya está disponible para crear pedidos y administrar existencias.',
+    });
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
