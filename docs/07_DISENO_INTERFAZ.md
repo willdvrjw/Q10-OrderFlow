@@ -46,6 +46,14 @@ En ancho reducido, una columna: encabezado > contadores > formulario > lista de 
 
 `AppShell`, `OrdersSummary`, `OrderForm`, `OrdersList`, `OrderStatusBadge`, `ConnectionStatus`, `FieldError`, `EmptyState`, `ToastRegion`. Hook `useOrdersLive` gestiona datos y conexión; los componentes de presentación no contienen llamadas directas a RabbitMQ ni reglas de inventario.
 
+## Extensión de inventario y alta de productos
+
+La consola incorpora un bloque de existencias bajo los pedidos: a la izquierda, tarjetas por SKU con desplazamiento vertical independiente y botón fijo **Agregar producto nuevo**; a la derecha, el formulario de ajuste de unidades. Un `ResizeObserver` permite que la columna izquierda nunca exceda la altura calculada del editor, incluso si se crean muchos productos. En pantallas estrechas, ambas columnas se apilan conservando el área desplazable.
+
+Al pulsar el botón de alta, se abre `NewProductForm` dentro del área desplazable, sin ocultar permanentemente las tarjetas. Exige un nombre, un SKU único y existencias iniciales (pueden ser cero). La API debe confirmar ambos registros antes de mostrar el resultado como disponible; luego se refrescan `GET /products` y `GET /inventory` y se selecciona la nueva tarjeta.
+
+El texto introductorio del editor mantiene alineación izquierda, diferenciándolo de las notificaciones flash centradas que sí pueden cerrarse manualmente. Inputs y selects poseen `id` y `name` compatibles con DevTools/autocompletado. Los errores de una extensión de Chrome se revisan fuera del código de la aplicación, sin esconder advertencias ni errores de consola.
+
 ## Accesibilidad y pruebas
 
 Labels asociadas a inputs, tabulación coherente, contraste, estados de foco, `aria-live` para resultados importantes y errores de formulario, no usar exclusivamente verde/rojo para comunicar estado. Verificar escritorio y móvil, zoom de navegador, envío por teclado y simulación de conexión interrumpida.
