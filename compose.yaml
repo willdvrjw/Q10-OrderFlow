@@ -59,7 +59,8 @@ services:
       dockerfile: src/Inventory.Worker/Dockerfile
     restart: unless-stopped
     environment:
-      DOTNET_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8081
+      ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__Inventory: Host=postgres;Port=5432;Database=orderflow_inventory;Username=orderflow;Password=${ORDERFLOW_PG_PASSWORD:-orderflow_demo_local_only}
       RabbitMq__HostName: rabbitmq
       RabbitMq__Port: "5672"
@@ -80,6 +81,8 @@ services:
       - "8080:80"
     depends_on:
       orders-api:
+        condition: service_started
+      inventory-worker:
         condition: service_started
 
   # Cinco pruebas reales: tres de dominio y dos sobre PostgreSQL.

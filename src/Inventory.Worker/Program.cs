@@ -1,10 +1,11 @@
 using Inventory.Worker.Application;
+using Inventory.Worker.Endpoints;
 using Inventory.Worker.Infrastructure.Messaging;
 using Inventory.Worker.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using OrderFlow.Messaging;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("Inventory")
     ?? throw new InvalidOperationException("Falta ConnectionStrings__Inventory.");
@@ -12,6 +13,7 @@ var connectionString = builder.Configuration.GetConnectionString("Inventory")
 builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseNpgsql(connectionString));
 builder.Services.AddScoped<OrderCreatedHandler>();
+builder.Services.AddScoped<InventoryManagementService>();
 
 // No se codifican credenciales; Compose suministra estas variables.
 // Si faltan, el servicio falla explícitamente antes de recibir mensajes.
@@ -29,13 +31,18 @@ builder.Services.AddSingleton(new RabbitMqSettings(
 builder.Services.AddHostedService<OrderCreatedConsumer>();
 builder.Services.AddHostedService<InventoryOutboxDispatcher>();
 
-using var host = builder.Build();
+var app = builder.Build();
 
-// La base y el seed deben estar listos antes de consumir pedidos;
-// en caso de error de conexión inicial se reintenta temporalmente.
+// Los ajustes de inventario y las reservas comparten esta misma base propia.
+// La semilla se prepara antes de servir HTTP o consumir eventos.
 await InventoryDatabaseInitializer.InitializeAsync(
-    host.Services,
-    host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("InventoryStartup"),
-    CancellationToken.None);
+    app.Services, app.Logger, app.Lifetime.ApplicationStopping);
 
-await host.RunAsync();
+app.MapGet("/health/live", () => Results.Ok(new { status = "alive" }));
+app.MapGet("/health/ready", async (InventoryDbContext db, CancellationToken ct) =>
+    await db.Database.CanConnectAsync(ct)
+        ? Results.Ok(new { status = "ready" })
+        : Results.StatusCode(StatusCodes.Status503ServiceUnavailable));
+app.MapInventoryEndpoints();
+
+await app.RunAsync();
