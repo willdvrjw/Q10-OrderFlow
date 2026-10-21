@@ -104,6 +104,14 @@ Se pulsó "Crear pedido" con cliente vacío, producto sin seleccionar y cantidad
 
 **Verificado:** validación visual de campos obligatorios y ausencia observable de un nuevo pedido en el panel. **Pendiente:** crear un pedido válido desde el formulario, observar refresco automático y ensayar respuesta a caída de SignalR.
 
+## Formulario: creación real y actualización automática
+
+**Fecha observada:** 20/10/2026, hora de Colombia.
+
+Desde el panel web se creó el pedido `ABC6E820` (prefijo visible), cliente `Prueba Formulario Q10`, SKU `XYZ-02`, cantidad 1. El formulario mostró la notificación verde de registro inicial `Pending`. Sin recargar manualmente el navegador, la tabla mostró el pedido en estado `Confirmado`, y los indicadores pasaron de 4 a 5 pedidos totales y de 3 a 4 confirmados, con 1 rechazado y 0 pendientes.
+
+**Alcance:** interfaz de creación y refresco sin recarga manual verificados. Aún no se ha atribuido causalmente el refresco a SignalR en vez del polling de respaldo. Falta revisar responsive y persistencia tras reinicio. El stock posterior de `XYZ-02` no se consultó en este paso.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
@@ -111,7 +119,8 @@ Se pulsó "Crear pedido" con cliente vacío, producto sin seleccionar y cantidad
 - [ ] Reiniciar contenedores con volúmenes existentes y comprobar que stock/pedidos persisten.
 - [x] Verificar errores `400` desde la API (3 casos comprobados).
 - [x] Verificar visualmente mensajes de error en el formulario (cliente y SKU obligatorios; captura del navegador).
-- [ ] Verificar interfaz en navegador y versión responsive.
+- [x] Comprobar creación y actualización de pedidos desde el formulario web (pedido ABC6E820 confirmado).
+- [ ] Verificar la versión responsive.
 - [ ] Verificar SignalR y polling frente a desconexión.
 - [ ] Validar el ensamblado de manifiestos Kubernetes y sus referencias.
 - [ ] Ejecutar el arranque obligatorio desde copia limpia en un host Docker sin ajustes especiales.
