@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { Order, OrderStatus } from '../types';
+import type { InventoryStock, Order, OrderStatus } from '../types';
 
 type StatusFilter = 'All' | OrderStatus;
 
@@ -9,7 +9,11 @@ interface Props {
   error: string | null;
   onRefresh: () => void;
   height?: number;
-  onRepeat: (order: Order) => void;
+  stock: InventoryStock[];
+  stockReady: boolean;
+  checkingRepeatId: string | null;
+  repeatFeedback: string | null;
+  onRepeat: (order: Order) => Promise<void>;
 }
 
 const filters: { value: StatusFilter; label: string }[] = [
@@ -40,7 +44,10 @@ function formatDate(value: string) {
  * Tabla de lectura y filtros locales. Los estados se consultan desde Orders API;
  * el frontend nunca decide si una reserva se confirma o rechaza.
  */
-export function OrdersList({ orders, loading, error, onRefresh, height, onRepeat }: Props) {
+export function OrdersList({
+  orders, loading, error, onRefresh, height, stock, stockReady,
+  checkingRepeatId, repeatFeedback, onRepeat,
+}: Props) {
   const [filter, setFilter] = useState<StatusFilter>('All');
   const [search, setSearch] = useState('');
 
@@ -97,6 +104,7 @@ export function OrdersList({ orders, loading, error, onRefresh, height, onRepeat
       )}
 
       <div className="orders-scroll-area" tabIndex={0} role="region" aria-label="Lista de pedidos">
+        {repeatFeedback && <div className="notice error" role="alert">{repeatFeedback}</div>}
         {loading ? (
           <div className="empty-state"><div className="loading-ring" /> Cargando pedidos...</div>
         ) : visible.length === 0 ? (
@@ -120,7 +128,12 @@ export function OrdersList({ orders, loading, error, onRefresh, height, onRepeat
                 </tr>
               </thead>
               <tbody>
-                {visible.map(order => (
+                {visible.map(order => {
+                  const available = stockReady
+                    ? stock.find(item => item.sku === order.sku)?.disponible
+                    : undefined;
+                  const canRepeat = available !== undefined && available >= order.cantidad;
+                  return (
                   <tr key={order.id}>
                     <td data-label="Pedido" className="mono order-id" title={order.id}>
                       {order.id.slice(0, 8).toUpperCase()}
@@ -137,15 +150,35 @@ export function OrdersList({ orders, loading, error, onRefresh, height, onRepeat
                         <span className="reason" title={order.motivoRechazo}>{order.motivoRechazo}</span>
                       )}
                       {order.estado === 'Rejected' && (
-                        <button type="button" className="retry-order-button"
-                          aria-label={'Preparar un pedido nuevo basado en ' + order.id}
-                          onClick={() => { setFilter('All'); onRepeat(order); }}>
-                          Crear nuevo pedido
-                        </button>
+                        <span className="retry-order-control">
+                          <button
+                            type="button"
+                            className="retry-order-button"
+                            disabled={!canRepeat || checkingRepeatId !== null}
+                            aria-label={'Preparar una solicitud nueva a partir del pedido ' + order.id}
+                            title={!stockReady ? 'Comprobando existencias actuales' :
+                              !canRepeat ? 'No hay existencias suficientes para repetir esta solicitud' :
+                              'Se comprobarán nuevamente las existencias antes de crear el pedido'}
+                            onClick={() => void onRepeat(order)}
+                          >
+                            {checkingRepeatId === order.id
+                              ? 'Verificando existencias...'
+                              : canRepeat ? 'Crear nuevo pedido' : 'Esperando reposición'}
+                          </button>
+                          {!canRepeat && (
+                            <span className="retry-stock-hint">
+                              {available === undefined
+                                ? 'Inventario sin verificar'
+                                : 'Disponibles: ' + available + ' de ' + order.cantidad}
+                              <a href="#inventario">Ir a inventario</a>
+                            </span>
+                          )}
+                        </span>
                       )}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
