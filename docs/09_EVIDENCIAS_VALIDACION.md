@@ -259,6 +259,14 @@ Después se indicó modificar desde otra pestaña las existencias de `TEST-03` m
 
 **Conclusión acotada:** conexión WebSocket de inventario observada y recepción del evento de ajuste confirmada por el usuario. Pendiente comprobar un evento producido por **reserva**, además de fallos controlados de SignalR y recuperación mediante polling propio del inventario.
 
+## Hallazgo de la repetición de pedidos rechazados — corrección pendiente de revalidación
+
+**Evidencia de las capturas del 21/10/2026:** después de utilizar la opción `Crear nuevo pedido` sobre `Prueba Stock Insuficiente`, el panel mostró **8 pedidos, 6 confirmados y 2 rechazados**, incluido un nuevo rechazado `7E9B5AD9` para `TEST-03` × 4 mientras el inventario seguía sin alcanzar. El formulario había precargado los datos del rechazado y mostrado que se crearía un pedido distinto. Esto evidenció que el flujo auxiliar de repetición no comprobaba existencias; no es un defecto de la máquina de estados original.
+
+**Corrección implementada en la rama, aún no probada en Codespaces:** el botón de repetición queda deshabilitado sin saldo suficiente y presenta cantidades disponibles; la lista recibe los saldos actualizados por la vista de Inventory. Al prepararlo se realiza `GET /inventory` fresco y, antes del POST desde un formulario originado en un rechazado, se repite la comprobación con `cache: no-store`. El resto de creación de pedidos mantiene las reglas de Q10. No se elimina ni modifica ninguno de los 8 pedidos registrados.
+
+**Verificaciones por realizar:** reconstruir frontend, comprobar que no se crea un noveno pedido con stock insuficiente, comprobar habilitación tras reposición y que las cinco pruebas backend siguen pasando. La consulta preventiva no reserva stock y no sustituye la decisión transaccional del Worker ante concurrencia.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
