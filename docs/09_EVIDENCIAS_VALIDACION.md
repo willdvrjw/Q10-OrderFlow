@@ -133,6 +133,18 @@ Se ejecutó `docker compose restart` sobre los cinco contenedores, sin eliminar 
 
 Esto demuestra la persistencia bajo reinicio de contenedores en el Codespace actual; no equivale a una ejecución desde un repositorio clonado en otro host.
 
+## Bonus Kubernetes — validación de ensamblado
+
+En GitHub Codespaces se ejecutó `kubectl kustomize k8s > /tmp/orderflow-k8s.yaml` sin errores. La inspección `grep "^kind:" /tmp/orderflow-k8s.yaml` devolvió exactamente:
+
+~~~text
+kind: ConfigMap
+kind: Service
+kind: Deployment
+~~~
+
+**Resultado verificado:** los manifiestos se ensamblan mediante Kustomize y contienen los tres tipos de recursos exigidos. **Límite:** este comando no consulta un servidor de Kubernetes, no valida su admisión por el API server ni demuestra que los contenedores se desplieguen en un clúster. El enunciado no exige clúster operativo.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
@@ -143,7 +155,7 @@ Esto demuestra la persistencia bajo reinicio de contenedores en el Codespace act
 - [x] Comprobar creación y actualización de pedidos desde el formulario web (pedido ABC6E820 confirmado).
 - [ ] Verificar la versión responsive.
 - [ ] Verificar SignalR y polling frente a desconexión.
-- [ ] Validar el ensamblado de manifiestos Kubernetes y sus referencias.
+- [x] Ensamblar manifiestos Kubernetes con Kustomize; ConfigMap, Service y Deployment obtenidos (validación contra un clúster no realizada).
 - [ ] Ejecutar el arranque obligatorio desde copia limpia en un host Docker sin ajustes especiales.
 - [ ] Revisar la consistencia final entre README, código y guía de defensa.
 
