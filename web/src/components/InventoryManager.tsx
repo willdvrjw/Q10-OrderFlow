@@ -146,7 +146,9 @@ export function InventoryManager({ products, onStockUpdate, onStockUnavailable, 
     : null;
 
   const productNames = useMemo(
-    () => new Map(products.map(product => [product.sku, product.nombre])),
+    () => new Map<string, string>(
+      products.map(product => [product.sku, product.nombre] as const),
+    ),
     [products],
   );
   const productName = (sku: string) =>
