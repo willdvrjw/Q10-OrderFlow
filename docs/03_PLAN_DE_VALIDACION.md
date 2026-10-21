@@ -36,7 +36,7 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [x] El comando `docker compose --profile tests run --build --rm backend-tests` volvió a pasar 5/5 después de incorporar SignalR de inventario y sus aserciones (registro compartido por el candidato).
 - [x] Revisado visualmente en capturas: portada fotográfica con contraste, tarjetas, diseño móvil a 530 px, altura y scroll interno de seguimiento, y encabezados de SKU.
 - [x] Confirmación expresa del usuario: el aviso se cierra manualmente mediante X y los errores rojos están centrados en el formulario.
-- [ ] Revalidar la compilación del frontend desde el último commit y repetir las cinco pruebas backend antes de integrar `main`.
+- [x] Validación final en Codespaces: `docker compose --profile tests run --build --rm backend-tests` ejecutó **5/5 pruebas aprobadas**; `docker compose up -d --build --no-deps web` completó sin errores reutilizando correctamente sus capas de caché (no fue build sin caché); `GET /health/ready` devolvió ready, 10 pedidos (8 Confirmed, 2 Rejected), y el repositorio local estaba limpio.
 - [x] Comprobar señalización WebSocket de inventario: conexiones `/hubs/inventory` y `/hubs/orders` con HTTP 101; el usuario confirmó recepción del mensaje `inventoryChanged` al ajustar existencias desde una segunda pestaña, sin recargar la receptora. Confirmación comunicada, sin captura del frame final.
 - [ ] Comprobar el mensaje `inventoryChanged` generado específicamente por una reserva nueva.
 - [ ] Comprobar recuperación de existencias por polling de 10 s al bloquear exclusivamente SignalR de inventario.
