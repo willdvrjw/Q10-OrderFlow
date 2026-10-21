@@ -162,7 +162,11 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 }
 .form-panel input[aria-invalid="true"], .form-panel select[aria-invalid="true"] { border-color: #dc2626; }
 .form-panel select { appearance: auto; }
-.form-panel .field-error { color: #b91c1c; margin-top: -16px; margin-bottom: 15px; font-size: 11px; }
+.form-panel .field-error {
+  display: block; width: 100%; text-align: center;
+  color: #b91c1c; margin-top: -16px; margin-bottom: 15px;
+  font-size: 11px; line-height: 1.55; overflow-wrap: anywhere;
+}
 .form-panel .field-hint { color: #94a3b8; margin-top: -16px; margin-bottom: 17px; font-size: 11px; }
 .form-rule { height: 1px; width: 100%; background: #edf0f4; margin: 8px 0 21px; }
 .form-footer p { font-size: 11px; line-height: 1.7; color: #718096; margin: 0 0 17px; }
@@ -177,7 +181,25 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 }
 .primary-button:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 17px 30px -15px rgba(194, 65, 12, .8); }
 .primary-button span { font-size: 18px; }
-.notice { margin-top: 16px; border-radius: 11px; border: 1px solid; padding: 12px 14px; font-size: 12px; line-height: 1.6; }
+.notice {
+  position: relative; display: flex; align-items: center;
+  justify-content: center; min-height: 52px;
+  margin-top: 16px; padding: 14px 46px;
+  border-radius: 11px; border: 1px solid;
+  font-size: 12px; line-height: 1.6; text-align: center;
+}
+.notice-body { flex: 1 1 auto; min-width: 0; text-align: center; overflow-wrap: anywhere; }
+.notice-close {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; padding: 0;
+  border: 1px solid rgba(40, 63, 88, .16);
+  border-radius: 8px; background: rgba(255, 255, 255, .62);
+  color: inherit; font-size: 20px; font-weight: 400; line-height: 1;
+  opacity: .8; transition: background .15s ease, opacity .15s ease;
+}
+.notice-close:hover { background: rgba(255, 255, 255, .96); opacity: 1; }
+.notice-close:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; opacity: 1; }
 .notice.success { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
 .notice.error { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
 .inline-action { margin-left: 8px; color: inherit; border: 0; background: none; text-decoration: underline; font-weight: 600; }
