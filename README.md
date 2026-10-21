@@ -2,7 +2,15 @@
 
 Evaluación Fullstack: registro de pedidos, reserva asíncrona de inventario y panel de operaciones.
 
-> **Estado verificado hasta ahora:** Docker construyó los cinco servicios, PostgreSQL y RabbitMQ quedaron saludables, la API respondió, un pedido válido se confirmó y otro sin stock se rechazó sin descuento indebido. **Las cinco pruebas backend ya se ejecutaron y aprobaron** (3 de dominio y 2 contra PostgreSQL real). Los manifiestos del bonus Kubernetes ya están implementados y `kubectl kustomize k8s` produjo ConfigMap, Service y Deployment sin errores; no se validaron en clúster. Ya se verificaron recuperaciones tras detener Worker y RabbitMQ, validación HTTP 400, uso del panel y persistencia tras reinicio. SignalR ya se verificó con HTTP 101 y recepción del frame `ordersChanged` por WebSocket. El respaldo por polling también se comprobó con SignalR bloqueado y actualización automática de contadores. Una copia limpia dentro del mismo Codespace ya creó sus propios volúmenes, sirvió la API y confirmó un pedido. El despliegue en otro host aún no ha sido comprobado.
+**Estado del proyecto:** versión funcional comprobada en GitHub Codespaces mediante Docker Compose.
+
+- **Backend:** Orders API e Inventory Worker en .NET 10, RabbitMQ y PostgreSQL; pedidos `Pending`, `Confirmed` y `Rejected`.
+- **Robustez:** Outbox transaccional, reintentos, idempotencia por pedido y descuento atómico; recuperación verificada ante detenciones de RabbitMQ y Worker.
+- **Pruebas:** cinco pruebas backend aprobadas, incluidas dos de integración con PostgreSQL real.
+- **Frontend:** React + TypeScript con validación, filtrado, SignalR y recuperación por polling. Dependencias fijadas en `web/package-lock.json` e instaladas con `npm ci`.
+- **Despliegue:** compilación, seed y creación/reserva comprobados en un clon independiente dentro del mismo Codespace; bonus Kubernetes ensamblado sintácticamente, no desplegado en un clúster.
+
+Los resultados y límites de verificación están documentados en [evidencias de validación](docs/09_EVIDENCIAS_VALIDACION.md).
 
 ## Arranque reproducible
 
@@ -119,4 +127,4 @@ Reemplazar inicialización de esquemas por migraciones; introducir privilegios m
 - docs/08_KUBERNETES.md: alcance, decisiones y límites del bonus.
 - docs/09_EVIDENCIAS_VALIDACION.md: registro de resultados reales.
 
-**Pendiente antes de entregar:** revisión final de código/documentación y, si es posible, ejecución independiente en otro host Docker. Se comprobó una copia nueva dentro de Codespaces con el mismo motor Docker y se requirió una corrección temporal del firewall del entorno; no se afirma verificación universal. La emulación visual adicional a 390 px se omitió por decisión del candidato, después de validar 530 px. Ver `docs/09_EVIDENCIAS_VALIDACION.md`.
+**Alcance de validación:** el sistema se ejecutó desde una copia nueva dentro de GitHub Codespaces, con volúmenes independientes. El firewall específico de ese entorno requirió un ajuste local de conectividad entre contenedores. No se ha probado todavía en un host Docker diferente. La emulación responsive se verificó a 530 × 710; no se ensayó 390 × 844. Kubernetes se verificó mediante Kustomize, sin clúster. Ver `docs/09_EVIDENCIAS_VALIDACION.md`.
