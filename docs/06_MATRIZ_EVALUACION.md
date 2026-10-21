@@ -14,7 +14,7 @@ Cada porcentaje corresponde a la sección «Cómo evaluamos» del PDF. Los bonus
 
 ## Bonus implementados o planificados desde la arquitectura
 
-- **Kubernetes (+10):** Deployment, Service, ConfigMap, startup/liveness/readiness y requests/limits para Orders API implementados. Validación de ensamblado pendiente; no se promete clúster activo. Ver `docs/08_KUBERNETES.md`.
+- **Kubernetes (+10):** Deployment, Service, ConfigMap, startup/liveness/readiness y requests/limits implementados. `kubectl kustomize k8s` ensambló los tres recursos sin errores; no se realizó validación contra un clúster. Ver `docs/08_KUBERNETES.md`.
 - **.NET (+5):** backend en .NET 10 LTS, uso idiomático de ASP.NET Core y Worker Service.
 - **SignalR (sin número especificado):** actualización push de pedidos con reconexión y polling de recuperación.
 
