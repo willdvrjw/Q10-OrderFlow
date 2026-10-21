@@ -9,12 +9,12 @@ Cada porcentaje corresponde a la sección «Cómo evaluamos» del PDF. Los bonus
 | Frontend | 15% | React TypeScript; formularios, estados y errores visibles; SignalR/polling | Capturas y prueba manual desktop/móvil del ciclo completo |
 | Docker y despliegue | 15% | Dockerfiles propios multi-stage, Compose, Postgres+RabbitMQ, seed y health checks | `docker compose up` en copia limpia sin pasos manuales adicionales |
 | Calidad del código | 10% | Código cohesivo, comentarios de decisiones complejas, contratos y logs estructurados | Revisión estática y explicación de cada método importante |
-| Tests | 10% | Exactamente 5 tests backend dirigidos a validación, transiciones, stock, idempotencia y concurrencia | Un solo comando documentado, todos pasando |
+| Tests | 10% | Cinco tests backend: tres de dominio y dos contra PostgreSQL real | Verificado en Codespaces: 5 aprobados, 0 fallidos (20/10/2026) |
 | README y comunicación | 10% | Instalación, puertos, arquitectura, trade-offs, fallos y «Qué haría distinto con más tiempo» | Evaluador nuevo entiende y levanta en menos de 10 minutos |
 
-## Bonus planificados desde la arquitectura
+## Bonus implementados o planificados desde la arquitectura
 
-- **Kubernetes (+10):** Deployment, Service, ConfigMap, liveness/readiness y requests/limits para Orders API; no se promete clúster activo.
+- **Kubernetes (+10):** Deployment, Service, ConfigMap, startup/liveness/readiness y requests/limits para Orders API implementados. Validación de ensamblado pendiente; no se promete clúster activo. Ver `docs/08_KUBERNETES.md`.
 - **.NET (+5):** backend en .NET 10 LTS, uso idiomático de ASP.NET Core y Worker Service.
 - **SignalR (sin número especificado):** actualización push de pedidos con reconexión y polling de recuperación.
 
