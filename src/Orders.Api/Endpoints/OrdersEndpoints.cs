@@ -36,7 +36,7 @@ public static class OrdersEndpoints
             var normalized = request.Sku.Trim().ToUpperInvariant();
             if (await db.CatalogProducts.AsNoTracking()
                 .AnyAsync(product => product.Sku == normalized, cancellationToken))
-                validSkus = catalog.Skus.Concat([normalized]).ToArray();
+                validSkus = catalog.Skus.Concat(new[] { normalized }).ToArray();
         }
 
         var errors = OrderValidator.Validate(request, validSkus);
