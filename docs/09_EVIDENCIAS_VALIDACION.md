@@ -334,6 +334,16 @@ No se realizaron modificaciones a las tablas, pedidos o existencias durante la o
 
 **Pendiente:** compilar servicios y frontend, ejecutar pruebas, comprobar alta/orden/stock/reinicio, inspeccionar scroll y reproducir DevTools antes de cualquier fusión en `main`.
 
+## Ampliación de catálogo: primera ejecución y recuperación de conectividad — 21/10/2026
+
+El usuario cambió a `feat/dynamic-products-and-console-quality` y ejecutó `docker compose up -d --build orders-api inventory-worker web`. Las imágenes de .NET 10 para Orders e Inventory y la imagen React/TypeScript **compilaron sin errores**. Los cinco contenedores se iniciaron, pero las tres consultas inmediatas por Nginx a `/health/ready`, `/products` y `/inventory` devolvieron HTTP 504.
+
+La primera ejecución del perfil de siete pruebas pasó 3 de dominio, pero fallaron las cuatro pruebas PostgreSQL por **timeout de conexión a 172.18.0.5:5432**; la traza terminaba en `TemporaryInventoryDatabase.CreateAsync`, no en aserciones del negocio. El usuario restableció tráfico de la red Docker mediante regla de `iptables-legacy` en `DOCKER-USER` para el puente `br-d944a5fdf444`; al reiniciar Orders e Inventory, las solicitudes inmediatas por Nginx devolvieron HTTP **502** (se requiere repetir cuando terminen de arrancar).
+
+**Resultado de la segunda ejecución del perfil de pruebas:** `Test Run Successful`, **7/7 pruebas aprobadas**, 0 fallidas, 0 omitidas. Incluye las cinco anteriores y los dos casos nuevos: producto persistente utilizable en reserva e idempotencia, y protección contra sobrescritura de stock de semilla. La compilación de los cinco proyectos .NET 10 terminó correctamente.
+
+**Todavía pendiente:** demostrar que Orders API e Inventory Worker responden HTTP 200 después de estabilizar su arranque, probar el alta de producto por la interfaz y confirmar persistencia sin modificar los pedidos históricos. Esta rama continúa separada de `main`.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
