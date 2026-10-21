@@ -16,6 +16,7 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [x] Si Inventory se detiene, el pedido permanece `Pending` y se procesa al recuperar el worker (pedido f069d769, comprobado en Codespaces por REST y Compose).
 - [x] Si RabbitMQ se detiene, la API registra pedidos `Pending` y el procesamiento se recupera al reiniciar el broker (pedido bca788f1 confirmado, stock XYZ-02 = 23).
 - [ ] El resultado persistido se recupera si hay una caída después de confirmar la transacción y antes del ACK.
+- [x] Creación real desde formulario web y actualización automática de tabla y contadores sin recarga manual (ABC6E820).
 - [ ] SignalR actualiza la interfaz y polling restaura coherencia tras desconexión.
 - [ ] Los datos seed se crean automáticamente y reiniciar no restablece el stock consumido.
 - [x] Las cinco pruebas backend se ejecutan con un solo comando documentado (20/10/2026, cinco aprobadas).
