@@ -297,6 +297,21 @@ El panel permaneció en **8 pedidos**, con **6 Confirmed**, **2 Rejected** y **0
 
 **Alcance:** aprobación visual confirmada por el usuario; todavía falta ejecutar nuevamente la compilación del frontend desde el último commit y las cinco pruebas finales antes de fusionar la rama.
 
+## Ejecución final previa a integración — 21/10/2026
+
+Desde la rama `feat/inventory-and-ui-refinement`, el candidato ejecutó `git pull --ff-only origin feat/inventory-and-ui-refinement`, el perfil de pruebas backend y la reconstrucción del frontend, seguido de consultas HTTP y `git status --short`. Se observaron los siguientes resultados:
+
+| Control | Resultado real |
+|---|---|
+| `docker compose --profile tests run --build --rm backend-tests` | **5 tests aprobados, 0 fallidos, 0 omitidos**; compilación de los cinco proyectos .NET 10 correcta |
+| `docker compose up -d --build --no-deps web` | Imagen web construida, contenedor activo; se reutilizó la caché del Dockerfile/NPM, no se solicitó reconstrucción `--no-cache` |
+| `GET /health/ready` | `{"status":"ready"}` |
+| `GET /inventory` | `ABC-01=96`, `TEST-03=6`, `XYZ-02=20` |
+| `GET /orders` | **10 pedidos:** 8 `Confirmed`, 2 `Rejected`, 0 `Pending` |
+| `git status --short` | Sin modificaciones locales pendientes |
+
+Los diez pedidos reflejan la actividad acumulada de las pruebas manuales; **estos comandos de validación no crearon pedidos**. El registro no prueba ejecución en otro host ni todos los escenarios opcionales: quedan por ensayar la caída del WebSocket de inventario y el recorrido completo de una repetición exacta tras la última corrección de la UI.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
