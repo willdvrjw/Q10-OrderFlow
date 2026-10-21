@@ -10,9 +10,9 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [x] Confirmado **HTTP 200** desde `127.0.0.1:8080/health/ready` en Codespaces con el nuevo bind `127.0.0.1:8080:80`. Queda pendiente verificar aparte apertura mediante URL externa de puertos reenviados de Codespaces y alternativa local 8090.
 - [x] Repetidas las siete pruebas backend con `docker compose --profile tests run --build --rm backend-tests`: **7 aprobadas, 0 fallidas, 0 omitidas**; duración del test 13,2 s, compilación de la solución y dependencias exitosa. También `nginx -t` correcto y `git status --short` limpio.
 - [ ] Comprobar recuperación de la conexión SignalR al abrir el navegador ANTES de que Orders API esté listo; el código ahora reintenta el arranque inicial sin desactivar polling.
-- [ ] Comprobar apertura del enlace Codespaces desde una cuenta GitHub de evaluador diferente; autenticación/cuota pueden impedirlo y no se promete acceso universal sin cuenta.
+- [x] Definido y aprobado el método de entrega: repositorio GitHub público y ejecución local con Docker Compose. Se descartan enlaces de Codespaces para evaluadores y alojamiento público como canales de demostración.
 - [ ] Probar en host Docker distinto de Codespaces y validar navegadores/SO por separado; no atribuir esos resultados a QA local.
-- [x] Integrada por **fast-forward** `audit/evaluator-onboarding-qa` en `main` tras verificar compilación de los tres componentes, cinco servicios activos, web `healthy`, Nginx correcto, HTTP `ready`, siete pruebas backend aprobadas y ausencia de cambios locales. GitHub aceptó el avance sin forzar ni reescribir historial; la comprobación multiplataforma externa y la demo pública siguen documentadas aparte.
+- [x] Integrada por **fast-forward** `audit/evaluator-onboarding-qa` en `main` tras verificar compilación de los tres componentes, cinco servicios activos, web `healthy`, Nginx correcto, HTTP `ready`, siete pruebas backend aprobadas y ausencia de cambios locales. GitHub aceptó el avance sin forzar ni reescribir historial; la comprobación multiplataforma externa sigue pendiente; el alojamiento público fue descartado por decisión del candidato.
 
 ## Checklist de aceptación obligatorio
 
