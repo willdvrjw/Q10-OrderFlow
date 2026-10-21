@@ -73,7 +73,7 @@ export function NewProductForm({ products, onCreated }: Props) {
 
       <label htmlFor="new-product-name">Nombre del producto <span aria-hidden="true">*</span></label>
       <input id="new-product-name" name="nombre" type="text"
-        maxLength={160} value={name} autoComplete="off"
+        maxLength={160} value={name} autoComplete="off" disabled={saving}
         placeholder="Ej. Agenda personalizada"
         aria-invalid={Boolean(fieldError('nombre'))}
         onChange={event => { setName(event.target.value); setErrors({}); setMessage(null); }} />
@@ -81,7 +81,7 @@ export function NewProductForm({ products, onCreated }: Props) {
 
       <label htmlFor="new-product-sku">SKU único <span aria-hidden="true">*</span></label>
       <input id="new-product-sku" name="sku" type="text"
-        maxLength={64} value={sku} autoComplete="off"
+        maxLength={64} value={sku} autoComplete="off" disabled={saving}
         placeholder="Ej. AGENDA-04"
         aria-invalid={Boolean(fieldError('sku'))}
         onChange={event => { setSku(event.target.value.toUpperCase()); setErrors({}); setMessage(null); }} />
@@ -90,7 +90,7 @@ export function NewProductForm({ products, onCreated }: Props) {
       <label htmlFor="new-product-stock">Existencias iniciales <span aria-hidden="true">*</span></label>
       <input id="new-product-stock" name="disponible"
         type="number" min="0" max="1000000" step="1" inputMode="numeric"
-        value={initialStock} aria-invalid={Boolean(fieldError('disponible'))}
+        value={initialStock} disabled={saving} aria-invalid={Boolean(fieldError('disponible'))}
         onChange={event => { setInitialStock(event.target.value); setErrors({}); setMessage(null); }} />
       {fieldError('disponible') && <small className="field-error">{fieldError('disponible')}</small>}
       <p className="product-form-help">Puedes comenzar con cero y añadir unidades después. El SKU no podrá duplicarse.</p>
