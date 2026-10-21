@@ -26,7 +26,8 @@ public sealed class InventoryDbContext(DbContextOptions<InventoryDbContext> opti
 
         modelBuilder.Entity<InventoryProductRegistration>(entity =>
         {
-            entity.ToTable("inventory_product_registrations");
+            entity.ToTable("inventory_product_registrations", table =>
+                table.HasCheckConstraint("ck_product_initial_stock", "stock_inicial BETWEEN 0 AND 1000000"));
             entity.HasKey(x => x.Sku);
             entity.Property(x => x.Sku).HasColumnName("sku").HasMaxLength(64);
             entity.Property(x => x.Nombre).HasColumnName("nombre").HasMaxLength(160).IsRequired();
