@@ -44,6 +44,18 @@ En este Codespace, `iptables-legacy` tenía política `FORWARD DROP`, sin regla 
 
 **Alcance de la evidencia:** recuperación automática de un pedido pendiente tras detener y arrancar el consumidor. El ensayo no comprueba por sí solo la recuperación del broker, la protección ante ACK perdido ni que no haya duplicados si se vuelve a entregar el mismo evento.
 
+## Ensayo verificado: recuperación de RabbitMQ
+
+**Fecha observada:** 21/10/2026 UTC (20/10/2026 en Colombia).
+
+1. Se detuvo RabbitMQ con `docker compose stop rabbitmq`.
+2. Durante la desconexión, Orders API aceptó con HTTP 201 el pedido `bca788f1-45dc-4e73-887a-4982d946095e` por dos unidades de `XYZ-02`, inicialmente en `Pending`.
+3. Una consulta posterior confirmó que el mismo pedido permanecía `Pending` mientras el broker estaba detenido.
+4. Tras `docker compose start rabbitmq` y esperar, `GET /orders` mostró el mismo pedido en `Confirmed`, sin reenviar manualmente la solicitud.
+5. PostgreSQL confirmó stock `XYZ-02 = 23` (inicialmente 25). También mostró `ABC-01 = 97` y `TEST-03 = 3`, coherentes con las pruebas anteriores.
+
+**Alcance de la evidencia:** creación de pedidos sin disponibilidad del broker, retención del trabajo pendiente, reanudación automática y descuento de inventario correcto. El ensayo no fuerza una caída exactamente entre publisher confirm y marcado de Outbox, ni prueba todos los casos de ACK perdido.
+
 ## Pruebas backend automatizadas
 
 Comando ejecutado:
@@ -71,7 +83,7 @@ Dos pruebas de integración utilizaron **PostgreSQL real y bases temporales aisl
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
-- [ ] Parar y recuperar RabbitMQ sin pérdida del evento Outbox.
+- [x] Parar y recuperar RabbitMQ sin pérdida del evento Outbox (pedido bca788f1 confirmado tras recuperación, stock XYZ-02 = 23).
 - [ ] Reiniciar contenedores con volúmenes existentes y comprobar que stock/pedidos persisten.
 - [ ] Verificar errores `400` desde la API y su visibilidad desde el formulario.
 - [ ] Verificar interfaz en navegador y versión responsive.
