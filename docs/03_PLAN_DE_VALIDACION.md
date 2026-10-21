@@ -51,6 +51,23 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [ ] Comprobar que el formulario normal sigue aceptando un pedido válido insuficiente con HTTP 201 Pending, para que Inventory lo resuelva a Rejected según Q10.
 - [x] Integrar por **fast-forward** `feat/inventory-and-ui-refinement` a `main` después de las cinco pruebas backend aprobadas, frontend reconstruido mediante Docker, HTTP de API e inventario correcto y confirmaciones manuales de la interfaz. No se reescribió historial ni se eliminaron volúmenes.
 
+## Ampliación pendiente: alta dinámica de productos y limpieza de Chrome — 21/10/2026
+
+**Rama:** `feat/dynamic-products-and-console-quality`. Las tareas siguientes se registran como pendientes: **el código está incorporado, no compilado ni probado aún en Codespaces**.
+
+- [ ] Compilar `orders-api`, `inventory-worker` y `web` desde esta rama con `docker compose up -d --build`; confirmar que ninguna imagen presenta errores de C# o TypeScript.
+- [ ] Ejecutar `docker compose --profile tests run --build --rm backend-tests`: deben pasar **7 pruebas** (5 originales + 2 nuevas sobre PostgreSQL); no confundir implementación con ejecución aprobada.
+- [ ] Consultar `GET /orders` y `GET /inventory` antes y después del despliegue: preservar los 10 pedidos existentes y saldos conocidos de `ABC-01`, `TEST-03` y `XYZ-02`; no borrar volúmenes.
+- [ ] Crear desde el panel **Agregar producto nuevo** (nombre, SKU no duplicado, stock inicial); comprobar HTTP 201 y presencia automática en `GET /products`, `GET /inventory`, tarjetas, editor de existencias y formulario de pedidos.
+- [ ] Registrar un pedido real con el SKU nuevo, comprobar `Pending → Confirmed`, descuento de stock correcto y actualización SignalR; rechazar cantidades superiores sin stock negativo.
+- [ ] Reintentar `POST /products` con el mismo SKU y comprobar `409 Conflict` sin duplicarlo ni resetear las unidades; la repetición exacta idempotente interna de Inventory se comprueba mediante test PostgreSQL.
+- [ ] Reiniciar contenedores sin `down -v` y confirmar que producto, nombre, SKU, pedidos e inventario persisten; incluir el mismo SKU en las dos APIs.
+- [ ] Crear sucesivos SKU de prueba y comprobar que las tarjetas **desbordan únicamente su zona con scroll**, sin superar la altura del editor derecho en escritorio y móvil; botón de alta accesible debajo de las tarjetas.
+- [ ] Revisar alineación a la izquierda de «Selecciona un producto y registra un ingreso o define su cantidad total».
+- [ ] Volver a inspeccionar Problemas de Chrome: el buscador de pedidos ya incluye `id`/`name` y los campos de Inventory también; comprobar la desaparición de esa advertencia con recarga nueva.
+- [ ] Investigar el error asíncrono de `chrome.runtime` en un perfil sin extensiones para separar errores del navegador/terceros de errores de la aplicación. No silenciar la consola globalmente ni atribuir mensajes de extensiones a React sin evidencia.
+- [ ] Evaluar el resultado final, corregir defectos detectados y **fusionar a main solamente después de aprobar**.
+
 ## Cinco pruebas backend implementadas y verificadas
 
 1. **Validación de entrada**: rechazo de nombre vacío, SKU desconocido y cantidad fuera del rango permitido mediante aserciones dentro del test de dominio.
