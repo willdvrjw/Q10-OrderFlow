@@ -121,11 +121,23 @@ Desde el panel web se creó el pedido `ABC6E820` (prefijo visible), cliente `Pru
 
 Los mensajes rojos de la consola apuntan a la página de autenticación de `github.dev/pf-signin` y a un canal de mensajes de navegador/extensión; con estas capturas no se demuestra que se originen en el código React. Sigue **pendiente** comprobar el viewport 390 × 844 y confirmar el resultado en él.
 
+## Persistencia de datos tras reinicio — verificada
+
+Se ejecutó `docker compose restart` sobre los cinco contenedores, sin eliminar los volúmenes. Antes del reinicio se guardaron las respuestas de `GET /orders` y `SELECT sku, disponible FROM stock_items ORDER BY sku`, y después se compararon con los datos recuperados.
+
+**Resultado observado:**
+- Cinco pedidos antes y cinco después.
+- La comparación por `id` de todos los objetos de pedidos devolvió `True`: datos idénticos.
+- `diff -u` entre los archivos de inventario no produjo ninguna diferencia.
+- API accesible tras el reinicio con la misma información.
+
+Esto demuestra la persistencia bajo reinicio de contenedores en el Codespace actual; no equivale a una ejecución desde un repositorio clonado en otro host.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
 - [x] Parar y recuperar RabbitMQ sin pérdida del evento Outbox (pedido bca788f1 confirmado tras recuperación, stock XYZ-02 = 23).
-- [ ] Reiniciar contenedores con volúmenes existentes y comprobar que stock/pedidos persisten.
+- [x] Reiniciar contenedores con volúmenes existentes: cinco pedidos idénticos, sin cambios en inventario.
 - [x] Verificar errores `400` desde la API (3 casos comprobados).
 - [x] Verificar visualmente mensajes de error en el formulario (cliente y SKU obligatorios; captura del navegador).
 - [x] Comprobar creación y actualización de pedidos desde el formulario web (pedido ABC6E820 confirmado).
