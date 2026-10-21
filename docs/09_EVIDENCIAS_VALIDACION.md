@@ -56,6 +56,20 @@ En este Codespace, `iptables-legacy` tenía política `FORWARD DROP`, sin regla 
 
 **Alcance de la evidencia:** creación de pedidos sin disponibilidad del broker, retención del trabajo pendiente, reanudación automática y descuento de inventario correcto. El ensayo no fuerza una caída exactamente entre publisher confirm y marcado de Outbox, ni prueba todos los casos de ACK perdido.
 
+## Validaciones HTTP 400 — comprobadas
+
+**Fecha observada:** 21/10/2026 UTC (20/10/2026 en Colombia).
+
+Se enviaron tres solicitudes `POST /orders` directamente al endpoint servido por Nginx. Todas devolvieron `HTTP/1.1 400 Bad Request` y `Content-Type: application/problem+json`, con errores específicos por campo:
+
+| Entrada inválida | Campo | Respuesta |
+|---|---|---|
+| `clienteNombre: "   "` | `clienteNombre` | `Ingresa el nombre del cliente.` |
+| `sku: "NO-EXISTE"` | `sku` | `Selecciona un SKU existente en el catálogo.` |
+| `cantidad: 101` | `cantidad` | `La cantidad debe ser un número entero entre 1 y 100.` |
+
+Esta evidencia confirma la validación y las respuestas HTTP; no constituye todavía una comprobación visual del formulario ni una consulta posterior que confirme ausencia de escrituras.
+
 ## Pruebas backend automatizadas
 
 Comando ejecutado:
@@ -85,7 +99,8 @@ Dos pruebas de integración utilizaron **PostgreSQL real y bases temporales aisl
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
 - [x] Parar y recuperar RabbitMQ sin pérdida del evento Outbox (pedido bca788f1 confirmado tras recuperación, stock XYZ-02 = 23).
 - [ ] Reiniciar contenedores con volúmenes existentes y comprobar que stock/pedidos persisten.
-- [ ] Verificar errores `400` desde la API y su visibilidad desde el formulario.
+- [x] Verificar errores `400` desde la API (3 casos comprobados).
+- [ ] Verificar visualmente mensajes de error en el formulario.
 - [ ] Verificar interfaz en navegador y versión responsive.
 - [ ] Verificar SignalR y polling frente a desconexión.
 - [ ] Validar el ensamblado de manifiestos Kubernetes y sus referencias.
