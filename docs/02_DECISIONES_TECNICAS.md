@@ -65,7 +65,7 @@ Estado inicial: propuestas adoptadas para implementación, sujetas a corrección
 
 **Frontera de seguridad:** las rutas administrativas son abiertas solo a efectos de demo local; autenticación/roles y auditoría serían obligatorios antes de exponerlas públicamente. El bonus Kubernetes actual no prueba aún el aprovisionamiento de productos.
 
-**Validación:** dos nuevos ensayos de integración PostgreSQL verifican creación, reserva, reintento y no sobrescritura. Pendientes de ejecutar junto a las cinco pruebas originales y comprobar la interfaz después de compilar.
+**Validación observada:** los dos ensayos de integración PostgreSQL de alta dinámica pasaron junto con las cinco pruebas originales (**7/7**) en Codespaces. El usuario confirmó el alta desde la interfaz, creación de pedido y cambio de stock; verificó HTTP 409 en SKU duplicado y conservación byte a byte de catálogo, inventario e historial al reiniciar los servicios. Las pruebas en otros sistemas operativos y una inyección exacta de caída entre COMMIT y ACK siguen pendientes.
 
 ## Reglas para cambios
 
