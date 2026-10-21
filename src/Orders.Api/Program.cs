@@ -17,6 +17,14 @@ builder.Services.AddDbContext<OrdersDbContext>(options =>
 builder.Services.AddSingleton(ProductCatalog.Load(
     Path.Combine(AppContext.BaseDirectory, "seed", "products.json")));
 builder.Services.AddScoped<StockResultHandler>();
+builder.Services.AddHttpClient<InventoryProductProvisioner>(client =>
+{
+    // API interna exclusivamente para registrar nuevos SKU; el flujo original
+    // de pedidos no depende de HTTP entre servicios y continúa por RabbitMQ.
+    client.BaseAddress = new Uri(
+        builder.Configuration["Inventory:BaseUrl"] ?? "http://inventory-worker:8081");
+    client.Timeout = TimeSpan.FromSeconds(12);
+});
 
 var rabbitUser = builder.Configuration["RabbitMq:UserName"]
     ?? throw new InvalidOperationException("Falta RabbitMq__UserName.");
