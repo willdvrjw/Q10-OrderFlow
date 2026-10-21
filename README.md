@@ -2,7 +2,7 @@
 
 Evaluación Fullstack: registro de pedidos, reserva asíncrona de inventario y panel de operaciones.
 
-**Estado del proyecto:** solución de pedidos, inventario y alta dinámica de productos compilada y validada en GitHub Codespaces. Siete pruebas backend aprobadas y funcionamiento del alta/pedido/stock comprobado por el candidato. La ampliación se prepara para integrar en `main`.
+**Estado del proyecto:** solución de pedidos, inventario y alta dinámica de productos integrada en `main` y validada en GitHub Codespaces. Siete pruebas backend aprobadas y funcionamiento del alta, la reserva y el ajuste de existencias comprobado por el candidato.
 
 - **Backend:** Orders API e Inventory Worker en .NET 10, RabbitMQ y PostgreSQL; pedidos `Pending`, `Confirmed` y `Rejected`.
 - **Robustez:** Outbox transaccional, reintentos, idempotencia por pedido y descuento atómico; recuperación verificada ante detenciones de RabbitMQ y Worker.
