@@ -98,21 +98,23 @@ La página incorpora una sección **Inventario disponible**, con consulta del st
 
 **Validación anterior de la interfaz e inventario:** cinco pruebas aprobadas en la etapa inicial (ahora ampliadas a siete); la recepción de `inventoryChanged` se observó con Chrome antes del ajuste de DNS dinámico de Nginx. Los pedidos `Rejected` siguen siendo terminales y las reglas originales se conservan. Permanecen sin ensayo específico el polling de inventario con WebSocket bloqueado y una repetición exacta de rechazado de extremo a extremo. Véase `docs/09_EVIDENCIAS_VALIDACION.md`.
 
-## Cinco tests backend, un comando
+## Siete tests backend, un comando
 
 ~~~bash
 docker compose --profile tests run --build --rm backend-tests
 ~~~
 
-Este comando utiliza el perfil opcional de pruebas y no altera el arranque normal con docker compose up. Ejecuta tres tests de dominio y dos sobre PostgreSQL real:
+Este comando utiliza el perfil opcional de pruebas y no altera el arranque normal con docker compose up. Ejecuta tres pruebas de dominio y cuatro de integración sobre PostgreSQL real:
 
 1. Validación de nombre, SKU y cantidad.
 2. Pedido creado en Pending, con transición única a Confirmed.
 3. Pedido rechazado como estado terminal.
 4. Idempotencia: reenviar OrderCreated con el mismo OrderId y EventId distinto no descuenta inventario dos veces.
 5. Concurrencia: dos reservas distintas sobre el mismo SKU no generan stock negativo y solo una puede descontar cuatro de cinco unidades.
+6. Alta de un SKU nuevo, reserva real y reintento idempotente que no restaura unidades.
+7. Alta duplicada que no puede sobrescribir existencias previamente registradas.
 
-**Aislamiento:** las dos pruebas PostgreSQL crean una base temporal distinta por test y la eliminan al finalizar; no modifican los pedidos de demostración. Requieren permisos de crear y eliminar bases sobre el servidor PostgreSQL de desarrollo. **Resultado verificado en Codespaces el 20/10/2026: cinco aprobadas, ninguna fallida.**
+**Aislamiento:** las cuatro integraciones PostgreSQL crean una base temporal distinta por test y la eliminan al finalizar; no modifican los datos del panel. Requieren permisos para crear y eliminar bases en PostgreSQL de pruebas. El perfil Docker configura la conexión automáticamente. **Resultado observado en Codespaces el 21/10/2026: siete aprobadas, ninguna fallida.**
 
 Para compilar sin iniciar servicios, ejecutar dotnet build OrderFlow.slnx. Los tests de PostgreSQL requieren conexión administrativa de pruebas mediante ORDERFLOW_TEST_POSTGRES; el comando con perfil Docker la configura automáticamente.
 
@@ -141,7 +143,7 @@ No se promete exactly-once delivery sobre RabbitMQ; los consumidores deben toler
 - EnsureCreated permite inicializar la demostración; para producción usaríamos migraciones versionadas.
 - Un solo contenedor PostgreSQL facilita reproducibilidad, pero no implica alta disponibilidad.
 - RabbitMQ.Client expone explícitamente reintentos, ACK y confirms, a cambio de más lógica propia.
-- El catálogo fijo simplifica el ejercicio; en producción tendría un servicio propietario de datos y sincronización.
+- Los tres productos de la semilla son fijos, pero el catálogo admite altas persistentes. La coordinación HTTP interna de un alta no es una transacción distribuida: el alta de existencias es idempotente y permite reintentar una operación parcialmente completada.
 - Las variables de entorno incluyen credenciales de prueba por defecto para que docker compose up funcione sin configuración manual. No reutilizarlas en producción. El archivo .env local no se versiona.
 
 ## Qué haría distinto con más tiempo
@@ -154,7 +156,7 @@ Reemplazar inicialización de esquemas por migraciones; introducir privilegios m
 - src/Inventory.Worker: stock, transacciones, idempotencia y consumo de eventos.
 - src/OrderFlow.Contracts: contratos de eventos.
 - src/OrderFlow.Messaging: transporte y topología RabbitMQ.
-- tests/OrderFlow.Tests: cinco pruebas backend, dos con PostgreSQL.
+- tests/OrderFlow.Tests: siete pruebas backend, cuatro con PostgreSQL real.
 - web: panel React.
 - infra: inicialización de bases y proxy Nginx.
 - k8s: bonus con Deployment, Service, ConfigMap, probes y límites **implementado; aún no validado en un clúster**. Ver `docs/08_KUBERNETES.md`.
