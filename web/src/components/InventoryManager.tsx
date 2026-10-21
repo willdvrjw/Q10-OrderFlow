@@ -6,6 +6,8 @@ import type { InventoryOperation, InventoryStock, Product } from '../types';
 
 interface Props {
   products: Product[];
+  onStockUpdate: (stock: InventoryStock[]) => void;
+  onStockUnavailable: () => void;
 }
 type Feedback = { kind: 'success' | 'error'; text: string } | null;
 
@@ -20,7 +22,7 @@ function stockStatus(available: number) {
  * o ajuste confirmado; GET /inventory sigue siendo la fuente de verdad.
  * El polling mantiene actualizado el panel si se pierde la conexión en vivo.
  */
-export function InventoryManager({ products }: Props) {
+export function InventoryManager({ products, onStockUpdate, onStockUnavailable }: Props) {
   const [stock, setStock] = useState<InventoryStock[]>([]);
   const [selectedSku, setSelectedSku] = useState('');
   const [operation, setOperation] = useState<InventoryOperation>('agregar');
@@ -38,15 +40,17 @@ export function InventoryManager({ products }: Props) {
       const current = await getInventory();
       if (requestId !== lastRequest.current) return;
       setStock(current);
+      onStockUpdate(current);
       setLoadError(null);
     } catch {
       if (requestId === lastRequest.current) {
+        onStockUnavailable();
         setLoadError('No fue posible consultar el inventario. Reintenta la consulta.');
       }
     } finally {
       if (requestId === lastRequest.current) setLoading(false);
     }
-  }, []);
+  }, [onStockUpdate, onStockUnavailable]);
 
   useEffect(() => {
     let disposed = false;
