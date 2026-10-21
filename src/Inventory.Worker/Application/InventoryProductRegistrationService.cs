@@ -33,8 +33,10 @@ public sealed class InventoryProductRegistrationService(
         {
             var existing = await db.ProductRegistrations.AsNoTracking()
                 .SingleOrDefaultAsync(x => x.Sku == sku, ct);
+            var stockExists = await db.Stock.AsNoTracking()
+                .AnyAsync(x => x.Sku == sku, ct);
             await transaction.RollbackAsync(ct);
-            return existing is not null &&
+            return existing is not null && stockExists &&
                 string.Equals(existing.Nombre, nombre, StringComparison.Ordinal) &&
                 existing.StockInicial == stockInicial
                 ? ProductRegistrationOutcome.AlreadyRegistered
