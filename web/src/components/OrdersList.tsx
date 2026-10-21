@@ -147,7 +147,16 @@ export function OrdersList({
                     <td data-label="Estado">
                       <StatusBadge status={order.estado} />
                       {order.estado === 'Rejected' && order.motivoRechazo && (
-                        <span className="reason" title={order.motivoRechazo}>{order.motivoRechazo}</span>
+                        canRepeat ? (
+                          <span className="reason replenished"
+                            title={'Motivo histórico del rechazo: ' + order.motivoRechazo}>
+                            Inventario repuesto · {available.toLocaleString('es-CO')} unidades disponibles
+                          </span>
+                        ) : (
+                          <span className="reason" title={order.motivoRechazo}>
+                            {order.motivoRechazo}
+                          </span>
+                        )
                       )}
                       {order.estado === 'Rejected' && (
                         <span className="retry-order-control">
