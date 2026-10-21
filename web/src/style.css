@@ -286,6 +286,10 @@ tbody tr:hover { background: #fafbfd; }
   background: linear-gradient(130deg, #f1f7ff, #fbfdff);
   border-color: #d1e4f6;
 }
+.retry-order-control {
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 6px; max-width: 100%;
+}
 .retry-order-button {
   display: inline-flex; align-items: center; justify-content: center;
   padding: 6px 9px; margin-top: 8px;
@@ -295,7 +299,18 @@ tbody tr:hover { background: #fafbfd; }
   line-height: 1.35; text-align: center; white-space: nowrap;
   transition: border-color .15s ease, background .15s ease;
 }
-.retry-order-button:hover { border-color: #d29b73; background: #fff2e8; }
+.retry-order-button:not(:disabled):hover { border-color: #d29b73; background: #fff2e8; }
+.retry-order-button:disabled {
+  opacity: 1; cursor: not-allowed;
+  background: linear-gradient(120deg, #f8fafc, #f1f5f9);
+  border-color: #e1e7ef; color: #657589;
+}
+.retry-stock-hint {
+  display: flex; flex-direction: column; gap: 3px;
+  font-size: 10px; line-height: 1.45; color: #667589;
+}
+.retry-stock-hint a { color: #9b4b20; text-decoration: underline; text-underline-offset: 2px; }
+.retry-stock-hint a:hover { color: #723717; }
 .inventory-heading-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
 .inventory-sync {
   display: inline-flex; gap: 9px; align-items: center; padding: 8px 11px;
@@ -457,8 +472,12 @@ tbody tr:hover { background: #fafbfd; }
   td:last-child::before { grid-column: 1; grid-row: 1; text-align: left; }
   td:last-child .status-badge { grid-column: 2; grid-row: 1; justify-self: end; }
   td:last-child .reason { grid-column: 1 / -1; grid-row: 2; width: 100%; max-width: none; margin: 0; text-align: right; }
+  td:last-child .retry-order-control {
+    grid-column: 2; grid-row: 3;
+    justify-self: end; align-items: flex-end;
+    text-align: right;
+  }
   td:last-child .retry-order-button {
-    grid-column: 2; grid-row: 3; justify-self: end;
     margin-top: 3px; font-size: 11px;
   }
   .eyebrow { font-size: 11px; }
