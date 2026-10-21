@@ -40,6 +40,9 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [ ] Comprobar que «Crear nuevo pedido» **permanece deshabilitado** cuando la cantidad de existencias es menor que la solicitada, y se habilita automáticamente tras una reposición suficiente.
 - [x] Comprobar bloqueo del envío desde un rechazado cuando la cantidad solicitada excede el stock: TEST-03 solicitó 5 con 4 disponibles; error visible y 8 pedidos conservados. La implementación usa GET /inventory con `cache: no-store` antes del POST.
 - [ ] Comprobar el escenario de fallo de consulta y la habilitación/deshabilitación del botón al variar el stock, y crear finalmente una reserva exitosa con cantidad disponible.
+- [ ] **Repetición exacta:** con un rechazado original por 4 unidades y stock actual de al menos 5, cambiar la cantidad a 5 debe mostrar error inmediato y mantener «Confirmar repetición» deshabilitado; el total de pedidos no debe aumentar.
+- [ ] Volver la cantidad a 4 debe permitir confirmar la repetición, previa verificación nueva de GET /orders/{id} y GET /inventory; el pedido original debe permanecer Rejected.
+- [ ] «Cancelar repetición» debe restaurar el registro manual; el flujo normal de Q10 no debe quedar bloqueado para cantidades distintas.
 - [ ] Confirmar que el pedido `Rejected` original conserva su estado y que solo aparece un identificador nuevo al guardar explícitamente con stock suficiente.
 - [ ] Comprobar que el formulario normal sigue aceptando un pedido válido insuficiente con HTTP 201 Pending, para que Inventory lo resuelva a Rejected según Q10.
 - [ ] Fusionar la rama de cambios en `main` solamente después de compilar y comprobar el flujo.
