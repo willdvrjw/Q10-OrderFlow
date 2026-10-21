@@ -206,6 +206,7 @@ tbody tr:hover { background: #fafbfd; }
 .status-badge.confirmed { color: #166534; background: #dcfce7; }
 .status-badge.rejected { color: #b91c1c; background: #fee2e2; }
 .reason { display: block; margin-top: 6px; font-size: 10px; color: #9f1239; max-width: 170px; }
+.reason.replenished { color: #166534; font-weight: 600; max-width: 220px; }
 .empty-state { min-height: 215px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; color: #64748b; font-size: 12px; padding: 24px; }
 .empty-state strong { color: #334155; font-size: 14px; }
 .empty-state p { max-width: 290px; line-height: 1.6; margin: 0; }
