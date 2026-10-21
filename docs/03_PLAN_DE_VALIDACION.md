@@ -26,15 +26,15 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [ ] Verificar de forma independiente arranque en otro host Docker y tiempo total hasta funcionamiento; aquí se comprobó un clon local al Codespace en el que las imágenes se compilaron en ~52 s, pero el arranque y la corrección de red exigieron tiempo adicional.
 - [ ] README y guía de defensa concuerdan con el código real, no con intenciones.
 
-## Cinco pruebas backend propuestas
+## Cinco pruebas backend implementadas y verificadas
 
-1. **Validación de entrada** (casos parametrizados): rechazo de cliente vacío/espacios, SKU desconocido y cantidad 0/101.
-2. **Transición confirmada**: inicio en `Pending`, reserva de inventario y cambio permitido a `Confirmed`; transición terminal repetida sin efecto.
-3. **Rechazo de stock**: producto con unidades insuficientes termina en `Rejected`, sin decrementar inventario.
-4. **Idempotencia**: mismo pedido/evento dos veces; stock se descuenta una sola vez y solo hay un resultado de reserva.
+1. **Validación de entrada**: rechazo de nombre vacío, SKU desconocido y cantidad fuera del rango permitido mediante aserciones dentro del test de dominio.
+2. **Transición confirmada**: inicio en `Pending`, cambio permitido a `Confirmed` y prohibición de revertirlo (test del dominio, sin invocar Inventory).
+3. **Estado rechazado terminal**: un pedido `Rejected` no puede pasar después a `Confirmed` (test de dominio). El rechazo por falta de stock sin descuento se verificó aparte mediante REST y consulta SQL.
+4. **Idempotencia**: mismo `OrderId` recibido dos veces con `EventId` diferente; stock se descuenta una sola vez y solo se genera un resultado de reserva (PostgreSQL real).
 5. **Concurrencia**: dos reservas para el mismo SKU y stock limitado; máximo una gana y el saldo nunca es negativo.
 
-Algunos tests deben ejercitar una base PostgreSQL real para que la verificación del SQL atómico sea válida; una simulación en memoria no demostraría concurrencia verdadera. Los tests de dominio pueden ser unitarios y rápidos. El comando único de ejecución se definirá al implementar el entorno de test.
+Las dos pruebas de persistencia utilizan PostgreSQL real, contextos independientes y bases temporales aisladas. Se ejecutaron con éxito junto a las tres pruebas de dominio mediante `docker compose --profile tests run --build --rm backend-tests` (cinco aprobadas). Una simulación en memoria no demostraría la concurrencia real.
 
 ## Ensayos de fallos (manuales guiados)
 
