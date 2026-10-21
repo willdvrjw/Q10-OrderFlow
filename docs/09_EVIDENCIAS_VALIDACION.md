@@ -32,6 +32,18 @@ En este Codespace, `iptables-legacy` tenía política `FORWARD DROP`, sin regla 
 | Motivo del rechazo | `Inventario insuficiente.` |
 | Stock de PostgreSQL tras ambos pedidos | `ABC-01=98`, `TEST-03=3`, `XYZ-02=25` |
 
+## Ensayo verificado: recuperación de Inventory Worker
+
+**Fecha observada:** 21/10/2026, UTC (20/10/2026 en Colombia).
+
+1. Se detuvo únicamente el servicio con `docker compose stop inventory-worker`.
+2. Con el consumidor detenido se creó el pedido `f069d769-005e-4223-9e30-2ae03992abff`, SKU `ABC-01`, cantidad 1. La API devolvió HTTP `201 Created`, estado `Pending`.
+3. Después de tres segundos, `GET /orders` mantuvo el pedido en `Pending`.
+4. Se reanudó el consumidor con `docker compose start inventory-worker`.
+5. Una consulta posterior mostró **el mismo pedido** con estado `Confirmed`, sin volver a enviarlo.
+
+**Alcance de la evidencia:** recuperación automática de un pedido pendiente tras detener y arrancar el consumidor. El ensayo no comprueba por sí solo la recuperación del broker, la protección ante ACK perdido ni que no haya duplicados si se vuelve a entregar el mismo evento.
+
 ## Pruebas backend automatizadas
 
 Comando ejecutado:
@@ -58,7 +70,7 @@ Dos pruebas de integración utilizaron **PostgreSQL real y bases temporales aisl
 
 ## Pendiente de aprobación
 
-- [ ] Parar y recuperar Inventory Worker sin pérdida del pedido.
+- [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
 - [ ] Parar y recuperar RabbitMQ sin pérdida del evento Outbox.
 - [ ] Reiniciar contenedores con volúmenes existentes y comprobar que stock/pedidos persisten.
 - [ ] Verificar errores `400` desde la API y su visibilidad desde el formulario.
