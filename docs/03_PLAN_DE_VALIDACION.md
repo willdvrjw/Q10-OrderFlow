@@ -30,10 +30,12 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 
 - [ ] Construir el Worker con ASP.NET Core y consultar `GET /inventory` a través de Nginx.
 - [ ] Ejecutar `POST /inventory/adjustments` para agregar unidades, establecer existencias y rechazar un saldo obsoleto con HTTP 409.
-- [ ] Verificar que modificar existencias no cambia los siete pedidos anteriores y que una reserva nueva sigue funcionando.
+- [x] Comprobar que un ajuste de existencias conserva los siete pedidos previos y sus estados (capturas: 7, 6 Confirmed, 1 Rejected).
+- [ ] Comprobar una nueva reserva después de los ajustes de stock.
 - [ ] Ejecutar nuevamente las cinco pruebas backend: el test de concurrencia ahora añade aserciones para las operaciones administrativas.
 - [ ] Revisar la imagen de portada aportada por el candidato, el sombreado de contraste, degradados, figuras discretas, responsive y scroll interno del listado de pedidos.
-- [ ] Comprobar por WebSocket `/hubs/inventory` la recepción de `inventoryChanged` después de una reserva y de un ajuste; el navegador debe mostrar el nuevo saldo sin recarga.
+- [x] Comprobar señalización WebSocket de inventario: conexiones `/hubs/inventory` y `/hubs/orders` con HTTP 101; el usuario confirmó recepción del mensaje `inventoryChanged` al ajustar existencias desde una segunda pestaña, sin recargar la receptora. Confirmación comunicada, sin captura del frame final.
+- [ ] Comprobar el mensaje `inventoryChanged` generado específicamente por una reserva nueva.
 - [ ] Comprobar recuperación de existencias por polling de 10 s al bloquear exclusivamente SignalR de inventario.
 - [ ] Verificar que un pedido `Rejected` conserva su estado tras reponer stock y que «Crear nuevo pedido» únicamente precarga otro formulario sin enviarlo automáticamente.
 - [ ] Fusionar la rama de cambios en `main` solamente después de compilar y comprobar el flujo.
