@@ -400,6 +400,14 @@ Antes y después se capturaron respuestas de `GET /products`, `GET /inventory` y
 
 **Estado de la ampliación:** compilación .NET + React sin errores, siete pruebas automatizadas aprobadas, recuperación de Nginx tras resolver upstreams vía DNS dinámico, alta de producto y reserva comprobadas manualmente, HTTP 409 para `FRP` duplicado sin modificación de datos, persistencia idéntica de `/products`, `/inventory` y `/orders` tras reiniciar. Siguen sin verificarse de manera independiente el error de canal asíncrono en extensiones de Chrome, el polling específico de inventario con WebSocket bloqueado y las conexiones SignalR después del ajuste de Nginx. No confundir ausencia de evidencia con fallo confirmado.
 
+## Integración final de productos dinámicos en main — 21/10/2026
+
+Tras la comprobación exitosa de **7 pruebas backend** (0 fallidas), compilación de Orders API, Inventory Worker y React/TypeScript, corrección del proxy Nginx con HTTP 200, alta del producto `FRP`, ajuste de stock y pedido confirmados por el usuario, rechazo del SKU duplicado con **HTTP 409** y conservación de `/products`, `/inventory` y `/orders` tras reinicio, el usuario **aprobó expresamente** el diseño de inventario de escritorio y móvil sin requerir capturas adicionales.
+
+La rama `feat/dynamic-products-and-console-quality` fue integrada en `main` mediante un avance rápido (fast-forward), sin fuerza ni reescritura de historial, desde el commit de partida `6f6b86a6aa8f63f1b752425c3fda66ca57252d46` hasta `dc96ee6d809c260f8128f02bb330ec596967aa2c`, seguido únicamente de actualizaciones documentales. La comparación de cambios confirmó que **`Order.cs`, `OrderStatus.cs`, `OrderCreatedHandler.cs` y `OrderEvents.cs` permanecieron idénticos**.
+
+**Límites pendientes sin resultados inventados:** revisión de la advertencia de Chrome en un perfil limpio sin extensiones, nueva verificación específica de WebSockets SignalR tras el cambio de proxy, sondeo de respaldo de inventario con WebSocket bloqueado y prueba de estrés visual con muchos SKU. La confirmación visual del candidato sí se acepta; no se sustituye por capturas inventadas. Tampoco se ha realizado despliegue en otro host Docker.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
