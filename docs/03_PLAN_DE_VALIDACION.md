@@ -49,7 +49,7 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [x] El panel mostró 9 pedidos: 7 confirmados y 2 rechazados; los rechazados conservaron su estado tras la reposición. La creación de una solicitud nueva confirmada se observó antes de imponer la equivalencia estricta.
 - [ ] Validar una repetición exacta (mismo cliente, SKU y cantidad), sin reutilizar el identificador anterior, en un ensayo controlado.
 - [ ] Comprobar que el formulario normal sigue aceptando un pedido válido insuficiente con HTTP 201 Pending, para que Inventory lo resuelva a Rejected según Q10.
-- [ ] Fusionar la rama de cambios en `main` solamente después de compilar y comprobar el flujo.
+- [x] Integrar por **fast-forward** `feat/inventory-and-ui-refinement` a `main` después de las cinco pruebas backend aprobadas, frontend reconstruido mediante Docker, HTTP de API e inventario correcto y confirmaciones manuales de la interfaz. No se reescribió historial ni se eliminaron volúmenes.
 
 ## Cinco pruebas backend implementadas y verificadas
 
