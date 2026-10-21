@@ -10,7 +10,8 @@ namespace Inventory.Worker.Application;
 /// </summary>
 public sealed class InventoryManagementService(
     InventoryDbContext db,
-    ILogger<InventoryManagementService> logger)
+    ILogger<InventoryManagementService> logger,
+    IInventoryChangeNotifier changes)
 {
     public Task<List<StockView>> ListAsync(CancellationToken ct) =>
         db.Stock.AsNoTracking()
@@ -21,6 +22,12 @@ public sealed class InventoryManagementService(
     public async Task<AdjustmentResult> ApplyAsync(
         string sku, string operation, int amount, int expected, CancellationToken ct)
     {
+        if (operation is not ("agregar" or "establecer") ||
+            amount is < 0 or > 1_000_000 ||
+            (operation == "agregar" && amount == 0) ||
+            expected < 0 || string.IsNullOrWhiteSpace(sku))
+            throw new ArgumentException("Los datos de ajuste de existencias son inválidos.");
+
         // Ambos UPDATE son atómicos. En particular, no hacemos SELECT-then-write:
         // una reserva concurrente hace fallar la condición en vez de perder datos.
         int affected;
@@ -55,6 +62,10 @@ public sealed class InventoryManagementService(
         logger.LogInformation(
             "Inventario {Sku}: {Operation}, cantidad {Amount}, saldo previo {Previous}.",
             sku, operation, amount, expected);
+
+        // El ajuste ya fue confirmado por PostgreSQL; una notificación fallida
+        // no revierte el saldo (el navegador dispone de polling de respaldo).
+        await changes.NotifyChangedAsync(sku, ct);
 
         return new AdjustmentResult(AdjustmentOutcome.Applied, latest);
     }
