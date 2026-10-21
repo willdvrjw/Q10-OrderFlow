@@ -12,30 +12,83 @@ Evaluación Fullstack: registro de pedidos, reserva asíncrona de inventario y p
 
 Los resultados y límites de verificación están documentados en [evidencias de validación](docs/09_EVIDENCIAS_VALIDACION.md).
 
-## Arranque reproducible
+## Empezar: ejecución reproducible y enlaces de acceso
 
-Requisito del evaluador: Docker Engine y Docker Compose. No hace falta instalar .NET ni Node.js localmente porque los Dockerfiles compilan los servicios.
+**Ver el código:** https://github.com/willdvrjw/Q10-OrderFlow
 
-Desde la raíz del repositorio:
+**Abrir un entorno desde el navegador:** https://codespaces.new/willdvrjw/Q10-OrderFlow?quickstart=1
 
-~~~bash
-docker compose up
-~~~
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/willdvrjw/Q10-OrderFlow?quickstart=1)
 
-- Panel web: http://localhost:8080
-- Estado de API: http://localhost:8080/health/ready
-- Catálogo: http://localhost:8080/products
-- Pedidos: POST /orders, GET /orders, GET /orders/{id}
-- SignalR: /hubs/orders; polling de respaldo cada cinco segundos
+> **Diferencia importante:** este repositorio es público, pero no existe una demo alojada de forma pública y permanente. El enlace de Codespaces permite que cada evaluador cree o reanude su propio entorno, con su propio puerto web y su propio inventario. Requiere cuenta y acceso/cuota de GitHub Codespaces; no equivale a una URL de aplicación ya desplegada.
 
-Si prefieres dejar el arranque en segundo plano:
+### Opción A: Windows, macOS y Linux con Docker
 
-~~~bash
-docker compose up -d --build
-docker compose ps
-~~~
+**Requisito único de ejecución:** Docker Engine activo con Docker Compose v2. Instala [Docker Desktop](https://docs.docker.com/desktop/) en Windows/macOS o, en Linux, Docker Desktop o Docker Engine con el complemento Compose. En Windows usa contenedores Linux. No necesitas instalar .NET, Node.js, PostgreSQL ni RabbitMQ.
 
-Los datos PostgreSQL y RabbitMQ usan volúmenes persistentes. No ejecutar un borrado de volúmenes si se desea conservar pedidos e inventario.
+1. Obtén el repositorio con Git o mediante **Code > Download ZIP** de GitHub. Si usas Git:
+
+   ~~~sh
+   git clone https://github.com/willdvrjw/Q10-OrderFlow.git
+   cd Q10-OrderFlow
+   ~~~
+
+   Con ZIP, descomprime y abre la terminal en la carpeta que contiene compose.yaml.
+
+2. Inicia Docker y ejecuta **un solo comando** en la raíz del proyecto:
+
+   ~~~sh
+   docker compose up
+   ~~~
+
+3. Espera a que los servicios terminen de arrancar. Abre **http://localhost:8080** en el navegador. El estado de API se puede comprobar en **http://localhost:8080/health/ready** (debe mostrar la propiedad status en ready). Crea un pedido desde el panel y observa su estado Pending hasta que Inventory lo confirme o rechace.
+
+La primera ejecución descarga y construye las imágenes y puede tardar varios minutos; la velocidad de red y el hardware pueden alargar el tiempo. El objetivo del README es que el proceso **se entienda** en menos de diez minutos, no prometer un tiempo de descarga universal.
+
+### Opción B: navegador con GitHub Codespaces, sin Docker instalado localmente
+
+1. Abre [Crear/reanudar Codespace en main](https://codespaces.new/willdvrjw/Q10-OrderFlow?quickstart=1) e inicia sesión en GitHub.
+2. Cuando se abra el editor web y su terminal, ejecuta:
+
+   ~~~sh
+   docker compose up -d --build
+   ~~~
+
+3. Abre **Ports / Puertos** y pulsa **Open in Browser / Abrir en navegador** sobre el puerto 8080. GitHub asignará una URL de tu propio Codespace.
+
+El código puede consultarse sin iniciar sesión porque GitHub lo sirve desde el repositorio público. En cambio, crear Codespaces requiere acceso a GitHub; el puerto suele ser **privado** y la sesión/URL dependen de ese entorno.
+
+**Seguridad del enlace:** la consola administrativa de la demo no tiene autenticación (no es un requisito de Q10). Por ello **no publiques el puerto de Codespaces ni expongas este sistema a Internet con datos reales**: visitantes anónimos podrían crear pedidos y modificar existencias. Una demo pública permanente necesitaría infraestructura hospedada y protección de las operaciones de escritura; no se proporciona ni se afirma que exista actualmente.
+
+### Operación diaria y pruebas
+
+| Acción | Comando |
+|---|---|
+| Arranque obligatorio de Q10 | docker compose up |
+| Iniciar en segundo plano | docker compose up -d --build |
+| Ver servicios y estado de salud | docker compose ps |
+| Últimos registros | docker compose logs --tail=80 |
+| Ejecutar las **7 pruebas** en un comando | docker compose --profile tests run --build --rm backend-tests |
+| Detener sin borrar información | docker compose down |
+| Volver a iniciar sin eliminar datos | docker compose up -d |
+
+PostgreSQL y RabbitMQ utilizan volúmenes persistentes. **Nunca ejecutes docker compose down -v si deseas conservar los pedidos, productos e inventario.** Las pruebas crean bases temporales separadas de las bases de demostración.
+
+### Problemas comunes
+
+- **Docker no está instalado o no está listo:** comprueba docker compose version y espera a que Docker Desktop indique que el motor está encendido.
+- **Puerto 8080 ocupado:** crea un archivo .env en la raíz con la línea ORDERFLOW_WEB_PORT=8090; inicia Compose de nuevo y abre http://localhost:8090. No cambies los puertos internos de los servicios.
+- **Error 502 al principio:** Orders e Inventory pueden seguir inicializando PostgreSQL; espera y revisa docker compose ps y docker compose logs --tail=80 web orders-api inventory-worker postgres. El proxy Nginx utiliza DNS dinámico para tolerar contenedores recreados.
+- **Pedido aún en Pending:** consulta docker compose ps y los registros de rabbitmq e inventory-worker. Si el broker o Inventory no responde, el evento queda pendiente y el procesamiento se recupera al regresar.
+- **El inventario no vuelve al valor inicial:** correcto; el volumen conserva consumos anteriores y nuevos SKU. En un primer arranque limpio la semilla carga tres productos.
+- **Codespaces no está disponible:** depende de la cuota/cuenta GitHub; usa la opción A. El Codespace de desarrollo necesitó resolver una peculiaridad de firewall del host, que **no** es un paso estándar en Docker Desktop.
+- **Cambiaste contraseñas después de iniciar PostgreSQL:** el volumen conserva las credenciales previas. No cambies contraseñas en una base ya inicializada sin realizar la rotación correspondiente; los valores por defecto son solo para demo local.
+
+No se exige archivo .env para empezar. El ejemplo .env.example enumera parámetros opcionales (también el puerto). Las contraseñas de demostración **no** están diseñadas para producción y no debes publicar un .env con secretos.
+
+**Compatibilidad esperada:** la interfaz es una aplicación web React/HTML/CSS y utiliza SignalR con polling de respaldo; funciona en navegadores modernos con JavaScript. Se probó manualmente con Chrome/Chromium en Codespaces. No se realizaron pruebas independientes en cada versión de Windows, macOS, Linux, Edge, Firefox o Safari; evita interpretar compatibilidad por estándares como una certificación universal.
+
+---
 
 ## Catálogo de demostración
 
