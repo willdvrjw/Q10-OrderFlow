@@ -84,7 +84,6 @@ export function OrderForm({ products, catalogError, onReloadCatalog, onCreated }
           <h2 id="new-order-title">Nuevo pedido</h2>
           <p>Registra una solicitud para reservar inventario.</p>
         </div>
-        <span className="step-index">01</span>
       </div>
 
       <form onSubmit={submit} noValidate>
@@ -154,7 +153,7 @@ export function OrderForm({ products, catalogError, onReloadCatalog, onCreated }
 
         <div className="form-rule" />
         <div className="form-footer">
-          <p>El pedido se registra como <strong>Pending</strong>. La confirmación llegará después de procesar el inventario.</p>
+          <p>El pedido se registra como <strong>pendiente</strong>. Se confirmará después de reservar inventario.</p>
           <button className="primary-button" type="submit" disabled={busy || products.length === 0}>
             {busy ? 'Registrando...' : 'Crear pedido'}
             {!busy && <span aria-hidden="true">↗</span>}

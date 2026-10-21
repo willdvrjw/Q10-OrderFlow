@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { OrderForm } from './components/OrderForm';
 import { OrdersList } from './components/OrdersList';
+import { InventoryManager } from './components/InventoryManager';
 import { useOrdersLive } from './hooks/useOrdersLive';
 import { getProducts } from './lib/api';
 import type { Product } from './types';
@@ -32,6 +33,8 @@ export default function App() {
   const { orders, loading, error, connected, refresh } = useOrdersLive();
   const [products, setProducts] = useState<Product[]>([]);
   const [catalogError, setCatalogError] = useState<string | null>(null);
+  const formPanelRef = useRef<HTMLDivElement>(null);
+  const [formPanelHeight, setFormPanelHeight] = useState<number>();
 
   const loadCatalog = useCallback(async () => {
     try {
@@ -44,6 +47,18 @@ export default function App() {
   }, []);
 
   useEffect(() => { void loadCatalog(); }, [loadCatalog]);
+
+  // Igualar la altura de seguimiento con la del formulario incluso si cambian
+  // sus mensajes de validación. La tabla usa scroll independiente.
+  useEffect(() => {
+    const element = formPanelRef.current;
+    if (!element) return;
+    const observer = new ResizeObserver(() => {
+      setFormPanelHeight(Math.ceil(element.getBoundingClientRect().height));
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   const pending = orders.filter(order => order.estado === 'Pending').length;
   const confirmed = orders.filter(order => order.estado === 'Confirmed').length;
@@ -63,10 +78,13 @@ export default function App() {
               </svg>
             </div>
             <div>
-              <span className="brand-title">orderflow<span className="brand-dot">.</span></span>
-              <span className="brand-subtitle">OPERATIONS CONSOLE</span>
+              <span className="brand-title">OrderFlow</span>
             </div>
           </div>
+          <nav className="topnav" aria-label="Secciones">
+            <a href="#pedidos">Pedidos</a>
+            <a href="#inventario">Inventario</a>
+          </nav>
           <div className={connected ? 'connection live' : 'connection polling'} role="status">
             <span className="connection-dot" />
             {connected ? 'Conectado en vivo' : 'Sincronización periódica'}
@@ -75,17 +93,13 @@ export default function App() {
       </header>
 
       <main className="container main-content">
-        <div className="hero">
+        <section className="hero" aria-labelledby="hero-title">
           <div className="hero-copy">
-            <div className="hero-kicker"><span className="sparkle" aria-hidden="true">✦</span> CONTROL DE OPERACIONES</div>
-            <h1>Pedidos bajo control<span>.</span></h1>
+            <span className="hero-kicker">CONTROL DE OPERACIONES</span>
+            <h1 id="hero-title">Pedidos bajo control</h1>
             <p>Registra solicitudes, monitorea reservas de inventario y acompaña cada pedido hasta su resolución.</p>
           </div>
-          <div className="hero-illustration" aria-hidden="true">
-            <div className="hero-tile"><span>OF</span><div className="hero-lines"><i /><i /><i /></div></div>
-            <span className="floating-chip">● EVENTOS EN VIVO</span>
-          </div>
-        </div>
+        </section>
 
         <section className="metrics" aria-label="Resumen de pedidos">
           <Metric label="Pedidos totales" value={orders.length} type="total" detail="Solicitudes registradas" />
@@ -94,20 +108,25 @@ export default function App() {
           <Metric label="Rechazados" value={rejected} type="rejected" detail="Sin stock disponible" />
         </section>
 
-        <div className="dashboard">
-          <OrderForm
-            products={products}
-            catalogError={catalogError}
-            onReloadCatalog={() => void loadCatalog()}
-            onCreated={() => refresh(true)}
-          />
+        <div className="dashboard" id="pedidos">
+          <div ref={formPanelRef} className="form-panel-measure">
+            <OrderForm
+              products={products}
+              catalogError={catalogError}
+              onReloadCatalog={() => void loadCatalog()}
+              onCreated={() => refresh(true)}
+            />
+          </div>
           <OrdersList
             orders={orders}
             loading={loading}
             error={error}
             onRefresh={() => void refresh(false)}
+            height={formPanelHeight}
           />
         </div>
+
+        <InventoryManager products={products} />
 
         <footer className="site-footer">
           <span>ORDERFLOW / SERVICIOS DISTRIBUIDOS</span>

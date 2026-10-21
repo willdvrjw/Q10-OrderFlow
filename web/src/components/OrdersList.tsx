@@ -8,6 +8,7 @@ interface Props {
   loading: boolean;
   error: string | null;
   onRefresh: () => void;
+  height?: number;
 }
 
 const filters: { value: StatusFilter; label: string }[] = [
@@ -38,7 +39,7 @@ function formatDate(value: string) {
  * Tabla de lectura y filtros locales. Los estados se consultan desde Orders API;
  * el frontend nunca decide si una reserva se confirma o rechaza.
  */
-export function OrdersList({ orders, loading, error, onRefresh }: Props) {
+export function OrdersList({ orders, loading, error, onRefresh, height }: Props) {
   const [filter, setFilter] = useState<StatusFilter>('All');
   const [search, setSearch] = useState('');
 
@@ -52,7 +53,7 @@ export function OrdersList({ orders, loading, error, onRefresh }: Props) {
   }, [orders, filter, search]);
 
   return (
-    <section className="panel orders-panel" aria-labelledby="orders-title">
+    <section className="panel orders-panel" aria-labelledby="orders-title" style={{ height: height ? height + "px" : undefined }}>
       <div className="panel-heading">
         <div>
           <span className="eyebrow">ACTIVIDAD RECIENTE</span>
@@ -94,52 +95,54 @@ export function OrdersList({ orders, loading, error, onRefresh }: Props) {
         <div className="notice error" role="alert">{error}</div>
       )}
 
-      {loading ? (
-        <div className="empty-state"><div className="loading-ring" /> Cargando pedidos...</div>
-      ) : visible.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon" aria-hidden="true">▣</div>
-          <strong>{orders.length === 0 ? 'Todavía no hay pedidos' : 'No encontramos coincidencias'}</strong>
-          <p>{orders.length === 0
-            ? 'Crea un pedido para comenzar el seguimiento.'
-            : 'Cambia el filtro o el término de búsqueda.'}</p>
-        </div>
-      ) : (
-        <div className="table-scroller">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Pedido</th>
-                <th scope="col">Cliente</th>
-                <th scope="col">SKU / Cantidad</th>
-                <th scope="col">Creado</th>
-                <th scope="col">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map(order => (
-                <tr key={order.id}>
-                  <td data-label="Pedido" className="mono order-id" title={order.id}>
-                    {order.id.slice(0, 8).toUpperCase()}
-                  </td>
-                  <td data-label="Cliente" className="customer-name">{order.clienteNombre}</td>
-                  <td data-label="SKU / Cantidad">
-                    <span className="sku-code">{order.sku}</span>
-                    <span className="quantity-note">× {order.cantidad}</span>
-                  </td>
-                  <td data-label="Creado" className="date-cell">{formatDate(order.creadoEn)}</td>
-                  <td data-label="Estado">
-                    <StatusBadge status={order.estado} />
-                    {order.estado === 'Rejected' && order.motivoRechazo && (
-                      <span className="reason" title={order.motivoRechazo}>{order.motivoRechazo}</span>
-                    )}
-                  </td>
+      <div className="orders-scroll-area" tabIndex={0} role="region" aria-label="Lista de pedidos">
+        {loading ? (
+          <div className="empty-state"><div className="loading-ring" /> Cargando pedidos...</div>
+        ) : visible.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon" aria-hidden="true">▣</div>
+            <strong>{orders.length === 0 ? 'Todavía no hay pedidos' : 'No encontramos coincidencias'}</strong>
+            <p>{orders.length === 0
+              ? 'Crea un pedido para comenzar el seguimiento.'
+              : 'Cambia el filtro o el término de búsqueda.'}</p>
+          </div>
+        ) : (
+          <div className="table-scroller">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Pedido</th>
+                  <th scope="col">Cliente</th>
+                  <th scope="col">SKU / Cantidad</th>
+                  <th scope="col">Creado</th>
+                  <th scope="col">Estado</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {visible.map(order => (
+                  <tr key={order.id}>
+                    <td data-label="Pedido" className="mono order-id" title={order.id}>
+                      {order.id.slice(0, 8).toUpperCase()}
+                    </td>
+                    <td data-label="Cliente" className="customer-name">{order.clienteNombre}</td>
+                    <td data-label="SKU / Cantidad">
+                      <span className="sku-code">{order.sku}</span>
+                      <span className="quantity-note">× {order.cantidad}</span>
+                    </td>
+                    <td data-label="Creado" className="date-cell">{formatDate(order.creadoEn)}</td>
+                    <td data-label="Estado">
+                      <StatusBadge status={order.estado} />
+                      {order.estado === 'Rejected' && order.motivoRechazo && (
+                        <span className="reason" title={order.motivoRechazo}>{order.motivoRechazo}</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
       <footer className="panel-footer">
         <span>{visible.length} de {orders.length} pedidos</span>
         <span>Actualización automática cada 5 segundos</span>

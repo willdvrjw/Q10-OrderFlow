@@ -1,6 +1,7 @@
-import type { CreateOrderRequest, FormErrors, Order, Product } from '../types';
+import type { CreateOrderRequest, FormErrors, InventoryAdjustmentRequest, InventoryAdjustmentResponse, InventoryStock, Order, Product } from '../types';
 
 interface ProblemDetails {
+  mensaje?: string;
   title?: string;
   detail?: string;
   errors?: FormErrors;
@@ -39,7 +40,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
     throw new ApiError(
       response.status,
-      problem.detail ?? problem.title ?? 'Solicitud no completada (' + response.status + ').',
+      problem.mensaje ?? problem.detail ?? problem.title ?? 'Solicitud no completada (' + response.status + ').',
       problem.errors ?? {},
     );
   }
@@ -57,6 +58,18 @@ export function getProducts(): Promise<Product[]> {
 
 export function createOrder(body: CreateOrderRequest): Promise<Order> {
   return request<Order>('/orders', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+/** Estas rutas van al servicio Inventory a través de Nginx, no a Orders. */
+export function getInventory(): Promise<InventoryStock[]> {
+  return request<InventoryStock[]>('/inventory');
+}
+
+export function adjustInventory(body: InventoryAdjustmentRequest): Promise<InventoryAdjustmentResponse> {
+  return request<InventoryAdjustmentResponse>('/inventory/adjustments', {
     method: 'POST',
     body: JSON.stringify(body),
   });

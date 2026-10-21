@@ -24,3 +24,22 @@ export interface CreateOrderRequest {
 }
 
 export type FormErrors = Record<string, string[]>;
+
+/** Existencias y ajustes administrados exclusivamente por Inventory. */
+export interface InventoryStock {
+  sku: string;
+  disponible: number;
+}
+export type InventoryOperation = 'agregar' | 'establecer';
+export interface InventoryAdjustmentRequest {
+  sku: string;
+  operacion: InventoryOperation;
+  cantidad: number;
+  existenciaEsperada: number;
+}
+export interface InventoryAdjustmentResponse {
+  sku: string;
+  disponible: number;
+  operacion: InventoryOperation;
+  cantidad: number;
+}
