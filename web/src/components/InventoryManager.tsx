@@ -1,5 +1,5 @@
 import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { ApiError, adjustInventory, getInventory } from '../lib/api';
 import { FlashNotice } from './FlashNotice';
@@ -145,8 +145,12 @@ export function InventoryManager({ products, onStockUpdate, onStockUnavailable, 
     ? operation === 'agregar' ? selected.disponible + requestedAmount : requestedAmount
     : null;
 
+  const productNames = useMemo(
+    () => new Map(products.map(product => [product.sku, product.nombre])),
+    [products],
+  );
   const productName = (sku: string) =>
-    products.find(product => product.sku === sku)?.nombre ?? 'Producto ' + sku;
+    productNames.get(sku) ?? 'Producto ' + sku;
 
   async function handleProductCreated(sku: string, nombre: string) {
     // Refrescar tanto el catálogo de Orders (para nuevos pedidos) como
