@@ -3,9 +3,8 @@ using Inventory.Worker.Application;
 namespace Inventory.Worker.Endpoints;
 
 /// <summary>
-/// API administrativa de DEMOSTRACIÓN. Inventory mantiene la propiedad
-/// de stock_items; Orders nunca lee ni modifica esta tabla.
-/// Para producción se requiere autenticación, autorización y auditoría.
+/// API de existencias de la consola: únicamente Inventory modifica stock_items.
+/// Las reservas de pedidos siguen resolviéndose por eventos asincrónicos.
 /// </summary>
 public sealed record StockAdjustmentRequest(
     string? Sku, string? Operacion, int Cantidad, int? ExistenciaEsperada);
