@@ -267,6 +267,12 @@ Después se indicó modificar desde otra pestaña las existencias de `TEST-03` m
 
 **Verificaciones por realizar:** reconstruir frontend, comprobar que no se crea un noveno pedido con stock insuficiente, comprobar habilitación tras reposición y que las cinco pruebas backend siguen pasando. La consulta preventiva no reserva stock y no sustituye la decisión transaccional del Worker ante concurrencia.
 
+## Revalidación — prevención de duplicados al repetir rechazados con cantidad superior al stock
+
+**Evidencia visual del 21/10/2026:** con el formulario preparado a partir de `Prueba Stock Insuficiente`, se editó manualmente la cantidad solicitada de **4 a 5** para `TEST-03` mientras había **4 unidades** de existencias. El formulario mostró `Solo hay 4 unidades disponibles y se solicitaron 5.` y `No se creó un pedido nuevo. Repón las existencias y vuelve a verificar antes de guardar.`
+
+El panel permaneció en **8 pedidos**, con **6 Confirmed**, **2 Rejected** y **0 Pending**. Se observó así que la validación preventiva justo antes del envío impide una repetición innecesaria cuando la cantidad se incrementa después de precargar el pedido rechazado. Esta evidencia **no prueba aún** el camino de creación exitosa con cuatro unidades, ni garantiza que no haya una reserva concurrente entre la consulta y el procesamiento asíncrono.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
