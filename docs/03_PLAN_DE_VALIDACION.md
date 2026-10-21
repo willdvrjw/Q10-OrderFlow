@@ -12,7 +12,7 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [ ] Comprobar recuperación de la conexión SignalR al abrir el navegador ANTES de que Orders API esté listo; el código ahora reintenta el arranque inicial sin desactivar polling.
 - [ ] Comprobar apertura del enlace Codespaces desde una cuenta GitHub de evaluador diferente; autenticación/cuota pueden impedirlo y no se promete acceso universal sin cuenta.
 - [ ] Probar en host Docker distinto de Codespaces y validar navegadores/SO por separado; no atribuir esos resultados a QA local.
-- [ ] Integrar por avance rápido `audit/evaluator-onboarding-qa` en `main` una vez revisado el resultado de las pruebas (7/7), salud `healthy`, compilación de los tres componentes y ausencia de cambios locales; verificar referencia de GitHub tras integración.
+- [x] Integrada por **fast-forward** `audit/evaluator-onboarding-qa` en `main` tras verificar compilación de los tres componentes, cinco servicios activos, web `healthy`, Nginx correcto, HTTP `ready`, siete pruebas backend aprobadas y ausencia de cambios locales. GitHub aceptó el avance sin forzar ni reescribir historial; la comprobación multiplataforma externa y la demo pública siguen documentadas aparte.
 
 ## Checklist de aceptación obligatorio
 
