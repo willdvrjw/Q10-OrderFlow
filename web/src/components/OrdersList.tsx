@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { InventoryStock, Order, OrderStatus } from '../types';
+import { FlashNotice } from './FlashNotice';
 
 type StatusFilter = 'All' | OrderStatus;
 
@@ -8,6 +9,8 @@ interface Props {
   loading: boolean;
   error: string | null;
   onRefresh: () => void;
+  onDismissError: () => void;
+  onDismissRepeatFeedback: () => void;
   height?: number;
   stock: InventoryStock[];
   stockReady: boolean;
@@ -45,8 +48,8 @@ function formatDate(value: string) {
  * el frontend nunca decide si una reserva se confirma o rechaza.
  */
 export function OrdersList({
-  orders, loading, error, onRefresh, height, stock, stockReady,
-  checkingRepeatId, repeatFeedback, onRepeat,
+  orders, loading, error, onRefresh, onDismissError, onDismissRepeatFeedback,
+  height, stock, stockReady, checkingRepeatId, repeatFeedback, onRepeat,
 }: Props) {
   const [filter, setFilter] = useState<StatusFilter>('All');
   const [search, setSearch] = useState('');
@@ -100,11 +103,15 @@ export function OrdersList({
       </div>
 
       {error && (
-        <div className="notice error" role="alert">{error}</div>
+        <FlashNotice tone="error" onClose={onDismissError}>{error}</FlashNotice>
       )}
 
       <div className="orders-scroll-area" tabIndex={0} role="region" aria-label="Lista de pedidos">
-        {repeatFeedback && <div className="notice error" role="alert">{repeatFeedback}</div>}
+        {repeatFeedback && (
+          <FlashNotice tone="error" onClose={onDismissRepeatFeedback}>
+            {repeatFeedback}
+          </FlashNotice>
+        )}
         {loading ? (
           <div className="empty-state"><div className="loading-ring" /> Cargando pedidos...</div>
         ) : visible.length === 0 ? (
