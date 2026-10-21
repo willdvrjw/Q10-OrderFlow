@@ -198,8 +198,10 @@ export function InventoryManager({ products }: Props) {
                 onClick={() => { setSelectedSku(item.sku); setFeedback(null); }}
                 aria-pressed={selectedSku === item.sku}
               >
-                <span className="stock-card-name">{productName(item.sku)}</span>
-                <span className="stock-card-sku">{item.sku}</span>
+                <span className="stock-card-heading">
+                  <span className="stock-card-name">{productName(item.sku)}</span>
+                  <span className="stock-card-sku">{item.sku}</span>
+                </span>
                 <span className={'stock-card-status ' + status.kind}>{status.label}</span>
                 <span className="stock-card-bottom">
                   <strong>{item.disponible.toLocaleString('es-CO')}</strong>
