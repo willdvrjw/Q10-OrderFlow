@@ -94,13 +94,23 @@ Dos pruebas de integración utilizaron **PostgreSQL real y bases temporales aisl
 - Idempotencia: el mismo `OrderId` con `EventId` diferente no descontó dos veces.
 - Concurrencia: de dos reservas de cuatro unidades con cinco disponibles, exactamente una reservó; la otra rechazó, sin stock negativo.
 
+## Comprobación visual del formulario React
+
+**Fecha observada:** 20/10/2026, hora local de Colombia.
+
+Se abrió el panel OrderFlow en el puerto 8080 de Codespaces. Las capturas muestran cuatro pedidos cargados desde la API: tres confirmados y uno rechazado, con contador de pendientes igual a cero. El indicador de conexión muestra "Conectado en vivo", aunque su presencia por sí sola no prueba la entrega de un evento SignalR.
+
+Se pulsó "Crear pedido" con cliente vacío, producto sin seleccionar y cantidad 1. La interfaz dibujó bordes rojos y mensajes específicos bajo `clienteNombre` y `sku`. El campo de cantidad válida no recibió error. El contador total se mantuvo en cuatro.
+
+**Verificado:** validación visual de campos obligatorios y ausencia observable de un nuevo pedido en el panel. **Pendiente:** crear un pedido válido desde el formulario, observar refresco automático y ensayar respuesta a caída de SignalR.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
 - [x] Parar y recuperar RabbitMQ sin pérdida del evento Outbox (pedido bca788f1 confirmado tras recuperación, stock XYZ-02 = 23).
 - [ ] Reiniciar contenedores con volúmenes existentes y comprobar que stock/pedidos persisten.
 - [x] Verificar errores `400` desde la API (3 casos comprobados).
-- [ ] Verificar visualmente mensajes de error en el formulario.
+- [x] Verificar visualmente mensajes de error en el formulario (cliente y SKU obligatorios; captura del navegador).
 - [ ] Verificar interfaz en navegador y versión responsive.
 - [ ] Verificar SignalR y polling frente a desconexión.
 - [ ] Validar el ensamblado de manifiestos Kubernetes y sus referencias.
