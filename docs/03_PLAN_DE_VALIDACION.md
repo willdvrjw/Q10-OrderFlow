@@ -9,7 +9,7 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [x] `POST /orders` responde 201 y devuelve `Pending` (comprobado vía REST).
 - [x] Pedido con suficiente stock termina en `Confirmed` (comprobado vía REST).
 - [x] Pedido con stock insuficiente termina en `Rejected` sin reducir stock (REST y PostgreSQL).
-- [ ] Nombre en blanco, SKU inexistente y cantidad fuera de 1..100 retornan 400 con errores legibles.
+- [x] Nombre en blanco, SKU inexistente y cantidad fuera de 1..100 retornan 400 con errores legibles (probado vía HTTP; 3 respuestas application/problem+json).
 - [ ] Los errores de formulario son visibles y comprensibles; no solo logs/console.
 - [x] Un `OrderCreated` repetido no descuenta inventario dos veces (prueba PostgreSQL aislada aprobada).
 - [x] Envíos concurrentes de cantidades incompatibles no producen stock negativo (prueba PostgreSQL aislada aprobada).
