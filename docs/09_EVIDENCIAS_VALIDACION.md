@@ -7,6 +7,14 @@ Registro de resultados observados entre el 20 y el 21 de octubre de 2026, distin
 - `dotnet build OrderFlow.slnx`: cinco proyectos compilados sin errores.
 - Revisión posterior de `RabbitMQ.Client 7.2.2`: se corrigió `DeliveryMode` para usar `DeliveryModes.Persistent`. La compilación posterior terminó satisfactoriamente.
 
+## Dependencias reproducibles del frontend — verificadas
+
+Se incorporó y versionó `web/package-lock.json` (npm lockfile v3) y el Dockerfile del frontend se actualizó para copiar `package.json` y `package-lock.json`, instalando paquetes con `npm ci --no-audit --no-fund`.
+
+Desde la raíz del repositorio se ejecutó `docker compose up -d --build --no-deps web`; la construcción completó `npm ci` y `npm run build` sin errores (16,2 segundos), y el contenedor Nginx siguió activo. `curl -I --max-time 15 http://localhost:8080/` devolvió HTTP **200 OK**. `git status` mostró rama `main` sincronizada y árbol limpio.
+
+**Alcance:** frontend compilado con el lockfile registrado; no implica que las etiquetas de imágenes base Docker estén fijadas por digest ni sustituye la prueba funcional backend ya documentada.
+
 ## Docker Compose
 
 - `docker compose config --quiet`: completado sin error.
