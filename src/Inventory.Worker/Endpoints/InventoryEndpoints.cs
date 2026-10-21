@@ -7,11 +7,11 @@ namespace Inventory.Worker.Endpoints;
 /// de stock_items; Orders nunca lee ni modifica esta tabla.
 /// Para producción se requiere autenticación, autorización y auditoría.
 /// </summary>
+public sealed record StockAdjustmentRequest(
+    string? Sku, string? Operacion, int Cantidad, int? ExistenciaEsperada);
+
 public static class InventoryEndpoints
 {
-    private sealed record StockAdjustmentRequest(
-        string? Sku, string? Operacion, int Cantidad, int? ExistenciaEsperada);
-
     public static IEndpointRouteBuilder MapInventoryEndpoints(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet("/inventory", async (
