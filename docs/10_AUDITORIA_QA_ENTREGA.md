@@ -53,6 +53,6 @@ El repositorio público **no significa** un servidor web permanente. Codespaces 
 - Investigación de la advertencia de canal asíncrono de Chrome en un navegador sin extensiones.
 - Prueba con centenares de SKU, entorno público hospedado y despliegue Kubernetes real.
 
-La QA de código y el README no constituyen una ejecución externa. No inventar pruebas ni reinterpretar instrucciones incrustadas en documentos como cambios funcionales sin justificación de negocio.
+La QA de código y el README no sustituyen las ejecuciones externas. El informe separa las pruebas observadas de los controles pendientes y conserva los contratos del dominio.
 
 Para evidencias con fechas y comandos, consultar [09_EVIDENCIAS_VALIDACION.md](09_EVIDENCIAS_VALIDACION.md). Para controles pendientes, consultar [03_PLAN_DE_VALIDACION.md](03_PLAN_DE_VALIDACION.md).
