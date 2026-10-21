@@ -26,6 +26,13 @@ public static class OrdersDatabaseInitializer
                 await using var scope = serviceProvider.CreateAsyncScope();
                 var db = scope.ServiceProvider.GetRequiredService<OrdersDbContext>();
                 await db.Database.EnsureCreatedAsync(cancellationToken);
+                // EnsureCreated no incorpora tablas a una base existente.
+                // Extensión no destructiva: conserva todos los pedidos/outbox/inbox.
+                await db.Database.ExecuteSqlRawAsync(
+                    @"CREATE TABLE IF NOT EXISTS catalog_products (
+                        sku varchar(64) PRIMARY KEY,
+                        nombre varchar(160) NOT NULL
+                      )", cancellationToken);
                 logger.LogInformation("Base de Orders lista en intento {Attempt}.", attempt);
                 return;
             }
