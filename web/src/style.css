@@ -123,6 +123,30 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 .panel-heading h2 { font-size: 21px; color: var(--ink); font-weight: 600; letter-spacing: -.037em; margin: 0 0 8px; }
 .panel-heading p { margin: 0; color: #718096; font-size: 12px; line-height: 1.5; }
 .form-panel form { display: flex; flex-direction: column; }
+.repeat-origin {
+  margin: 0 0 24px; padding: 14px 15px;
+  border: 1px solid #d8e6f6; border-radius: 12px;
+  background: linear-gradient(125deg, #f4f9ff, #ffffff);
+}
+.repeat-origin p {
+  font-size: 11px; line-height: 1.65; color: #476078;
+  margin: 0 0 8px; text-wrap: pretty;
+}
+.repeat-origin p strong { color: #1e3a57; font-weight: 600; }
+.cancel-repeat {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 7px 10px; border-radius: 8px;
+  background: linear-gradient(110deg, #ffffff, #f6f9fc);
+  border: 1px solid #cbd9e9; color: #32506c;
+  font-size: 11px; font-weight: 600;
+}
+.cancel-repeat:not(:disabled):hover { border-color: #a8bfd8; color: #173955; }
+.form-panel input[readonly], .form-panel select:disabled {
+  opacity: 1; color: #526175;
+  background: linear-gradient(110deg, #f7f9fc, #ffffff);
+  cursor: not-allowed;
+}
+
 .form-panel label { font-size: 12px; font-weight: 600; color: #314154; margin: 0 0 9px; }
 .form-panel label > span { color: var(--accent); }
 .form-panel input, .form-panel select {
