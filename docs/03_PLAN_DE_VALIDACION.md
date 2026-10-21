@@ -30,7 +30,7 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 
 - [x] Worker ASP.NET Core compilado; `GET /inventory` respondió HTTP 200 con los tres SKU y se comprobó negociación SignalR HTTP 200.
 - [x] Registrar ingreso y reemplazo de existencias desde la interfaz (`TEST-03` 3→6 y posterior ajuste de total); respuesta visual confirmada y actualización de tarjetas.
-- [ ] Comprobar HTTP 409 de `POST /inventory/adjustments` con `existenciaEsperada` incorrecta sin afectar existencias.
+- [x] Comprobar HTTP 409 de `POST /inventory/adjustments` con `existenciaEsperada: 999999`: el servidor respondió `409 Conflict`, `disponibleActual: 6`, y se verificó que los tres saldos no cambiaron (`ABC-01=96`, `TEST-03=6`, `XYZ-02=20`).
 - [x] Comprobar que un ajuste de existencias conserva los siete pedidos previos y sus estados (capturas: 7, 6 Confirmed, 1 Rejected).
 - [x] Se observó una reserva nueva de `TEST-03` ×5 confirmada tras actualizar inventario a 6: panel con 9 pedidos, 7 confirmados y 2 rechazados. La creación de esa solicitud con cantidad cambiada reveló otro fallo del flujo de repetición, que se corrigió posteriormente.
 - [x] El comando `docker compose --profile tests run --build --rm backend-tests` volvió a pasar 5/5 después de incorporar SignalR de inventario y sus aserciones (registro compartido por el candidato).
