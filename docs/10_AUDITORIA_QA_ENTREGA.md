@@ -42,7 +42,7 @@ El repositorio público **no significa** un servidor web permanente. Codespaces 
 - Producto nuevo creado desde la interfaz, usado en pedido, y existencias actualizadas; confirmado manualmente por el usuario.
 - SKU repetido bloqueado por UI y por Orders API con **HTTP 409**, sin cambios en productos, inventario o pedidos.
 - Reinicio de Orders, Inventory y web: comparación byte a byte SIN CAMBIOS en /products, /inventory y /orders.
-- Nginx con DNS interno de Docker: HTTP 200 en salud, catálogo e inventario tras recrear servicios.
+- Nginx con DNS interno de Docker: HTTP 200 en salud, catálogo e inventario tras recrear servicios. En la última QA portable (21/10), hubo errores transitorios y dos reinicios de cada backend antes de recuperar HTTP 200 en `/health/ready`; no se presenta la primera ejecución como libre de incidencias.
 - Diseño móvil y escritorio aprobado expresamente por el usuario; no se simuló la creación de cientos de productos.
 
 ## Pendientes que no deben presentarse como aprobados
