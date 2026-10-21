@@ -40,6 +40,7 @@ export function InventoryManager({ products, onStockUpdate, onStockUnavailable, 
   const stockScrollRef = useRef<HTMLDivElement>(null);
   const [editorHeight, setEditorHeight] = useState<number>();
   const [showCreate, setShowCreate] = useState(false);
+  const [stockQuery, setStockQuery] = useState('');
 
   // La altura de la columna de productos sigue a la del editor; solamente
   // la lista izquierda se desplaza cuando aumentan los SKU.
@@ -154,12 +155,22 @@ export function InventoryManager({ products, onStockUpdate, onStockUnavailable, 
   const productName = (sku: string) =>
     productNames.get(sku) ?? 'Producto ' + sku;
 
+  const visibleStock = useMemo(() => {
+    const term = stockQuery.trim().toLowerCase();
+    if (!term) return stock;
+    return stock.filter(item =>
+      item.sku.toLowerCase().includes(term) ||
+      (productNames.get(item.sku) ?? '').toLowerCase().includes(term),
+    );
+  }, [stock, productNames, stockQuery]);
+
   async function handleProductCreated(sku: string, nombre: string) {
     // Refrescar tanto el catálogo de Orders (para nuevos pedidos) como
     // el inventario del Worker; mostrar y seleccionar el nuevo SKU.
     await onProductCreated();
     await refresh();
     setSelectedSku(sku);
+    setStockQuery('');
     setShowCreate(false);
     setFeedback({
       kind: 'success',
@@ -232,6 +243,13 @@ export function InventoryManager({ products, onStockUpdate, onStockUnavailable, 
       )}
       <div className="inventory-layout">
         <div className="stock-column" style={{ height: editorHeight ? editorHeight + 'px' : undefined }}>
+          <label className="stock-search">
+            <span className="sr-only">Buscar en el catálogo por nombre o SKU</span>
+            <input id="stock-filter" name="stockFilter" type="search"
+              placeholder="Buscar producto o SKU"
+              value={stockQuery}
+              onChange={event => setStockQuery(event.target.value)} />
+          </label>
           <div ref={stockScrollRef} className="stock-scroll-area" role="region"
             aria-label="Catálogo de productos, desplazamiento independiente" tabIndex={0}>
             {showCreate && (
@@ -242,7 +260,9 @@ export function InventoryManager({ products, onStockUpdate, onStockUnavailable, 
             <div className="inventory-loading">Consultando inventario...</div>
           ) : stock.length === 0 ? (
             <div className="inventory-loading">No se encontraron productos con existencias registradas.</div>
-          ) : stock.map(item => {
+          ) : visibleStock.length === 0 ? (
+            <div className="inventory-loading">No se encontraron productos para esa búsqueda.</div>
+          ) : visibleStock.map(item => {
             const status = stockStatus(item.disponible);
             return (
               <button
