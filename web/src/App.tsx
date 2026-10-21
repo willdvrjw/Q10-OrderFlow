@@ -31,7 +31,7 @@ function Metric({ label, value, type, detail }: MetricProps) {
 
 /** Orquestación exclusiva de la presentación: la lógica de negocio permanece en .NET. */
 export default function App() {
-  const { orders, loading, error, connected, refresh } = useOrdersLive();
+  const { orders, loading, error, connected, refresh, dismissError } = useOrdersLive();
   const [products, setProducts] = useState<Product[]>([]);
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const formPanelRef = useRef<HTMLDivElement>(null);
@@ -175,6 +175,7 @@ export default function App() {
               }}
               catalogError={catalogError}
               onReloadCatalog={() => void loadCatalog()}
+              onDismissCatalogError={() => setCatalogError(null)}
               onCreated={async () => {
                 setRepeatPrefill(null);
                 await refresh(true);
@@ -186,6 +187,8 @@ export default function App() {
             loading={loading}
             error={error}
             onRefresh={() => void refresh(false)}
+            onDismissError={dismissError}
+            onDismissRepeatFeedback={() => setRepeatFeedback(null)}
             height={formPanelHeight}
             stock={inventoryStock}
             stockReady={inventoryReady}
