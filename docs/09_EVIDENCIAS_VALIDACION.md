@@ -392,6 +392,14 @@ Antes y después se capturaron respuestas de `GET /products`, `GET /inventory` y
 
 **Conclusión:** la API bloquea duplicados independientemente del frontend y no altera el catálogo, el inventario ni los pedidos existentes. La prueba no intenta crear SKU adicionales. La integridad frente a carreras simultáneas se basa en las claves primarias de PostgreSQL; este ensayo específico fue secuencial.
 
+## Aprobación visual de Inventario — confirmación del candidato
+
+**21/10/2026 (hora local de Colombia):** se solicitó al usuario comprobar en escritorio y a 390 px la colocación del botón «Agregar producto nuevo», altura de la columna de tarjetas respecto del editor, desplazamiento interno y alineación a la izquierda del texto introductorio «Selecciona un producto y registra un ingreso o define su cantidad total».
+
+**Respuesta expresa:** «están bien, confía en mí». Se registra esa declaración como **aprobación manual del usuario**, sin exigir capturas adicionales. No se infiere de ella una prueba de estrés con decenas o cientos de SKU; actualmente consta el catálogo inicial de tres y el SKU dinámico `FRP`.
+
+**Estado de la ampliación:** compilación .NET + React sin errores, siete pruebas automatizadas aprobadas, recuperación de Nginx tras resolver upstreams vía DNS dinámico, alta de producto y reserva comprobadas manualmente, HTTP 409 para `FRP` duplicado sin modificación de datos, persistencia idéntica de `/products`, `/inventory` y `/orders` tras reiniciar. Siguen sin verificarse de manera independiente el error de canal asíncrono en extensiones de Chrome, el polling específico de inventario con WebSocket bloqueado y las conexiones SignalR después del ajuste de Nginx. No confundir ausencia de evidencia con fallo confirmado.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
