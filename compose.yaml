@@ -78,8 +78,18 @@ services:
       context: .
       dockerfile: web/Dockerfile
     restart: unless-stopped
+    # Solo se expone en la máquina del evaluador; no publica las API administrativas
+    # en la red local. Cambiar ORDERFLOW_WEB_PORT si 8080 está ocupado.
     ports:
-      - "8080:80"
+      - "127.0.0.1:${ORDERFLOW_WEB_PORT:-8080}:80"
+    # Muestra el estado real en docker compose ps mientras el backend termina
+    # de preparar las tablas y el catálogo. Nginx Alpine incluye BusyBox wget.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 60s
     depends_on:
       orders-api:
         condition: service_started
