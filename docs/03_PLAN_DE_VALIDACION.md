@@ -6,7 +6,7 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 
 - [x] Una copia limpia en el mismo Codespace, arrancada con `docker compose up -d --build`, construyó frontend, Orders API, Inventory Worker, RabbitMQ y PostgreSQL; se validó seed y pedido Confirmed. Fue necesaria una regla temporal de firewall del host.
 - [ ] Verificar el comando literal `docker compose up` y portabilidad a otro host Docker sin ajustes especiales.
-- [ ] `GET /orders` responde por el puerto publicado del frontend y directamente en la red interna del API.
+- [x] `GET /orders` respondió por el puerto publicado (HTTP 200) y desde el contenedor web mediante la red interna Docker; 7 pedidos originales conservados.
 - [x] `POST /orders` responde 201 y devuelve `Pending` (comprobado vía REST).
 - [x] Pedido con suficiente stock termina en `Confirmed` (comprobado vía REST).
 - [x] Pedido con stock insuficiente termina en `Rejected` sin reducir stock (REST y PostgreSQL).
@@ -24,7 +24,7 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [x] Las cinco pruebas backend se ejecutan con un solo comando documentado (20/10/2026, cinco aprobadas).
 - [x] Kubernetes incluye Deployment, Service, ConfigMap, probes y requests/limits; `kubectl kustomize k8s` generó los tres recursos sin errores. No se ha validado contra un clúster.
 - [ ] Verificar de forma independiente arranque en otro host Docker y tiempo total hasta funcionamiento; aquí se comprobó un clon local al Codespace en el que las imágenes se compilaron en ~52 s, pero el arranque y la corrección de red exigieron tiempo adicional.
-- [ ] README y guía de defensa concuerdan con el código real, no con intenciones.
+- [x] README, matriz y guía de defensa contrastados con archivos reales; eliminadas rutas y afirmaciones de trabajo futuro obsoletas.
 
 ## Cinco pruebas backend implementadas y verificadas
 
