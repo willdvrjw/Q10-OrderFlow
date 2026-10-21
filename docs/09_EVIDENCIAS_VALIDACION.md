@@ -281,6 +281,14 @@ El panel permaneció en **8 pedidos**, con **6 Confirmed**, **2 Rejected** y **0
 
 **Invariantes:** los estados `Pending`, `Confirmed` y `Rejected` siguen sin modificaciones; ningún pedido rechazado se reabre. Una nueva solicitud con exactamente los mismos datos seguirá recibiendo su propio ID, y su confirmación dependerá del Worker. Pendiente reconstruir el frontend y comprobar cantidad distinta con saldo suficiente sin crear otro pedido.
 
+## Validación de concurrencia optimista en ajustes — HTTP 409
+
+**Observado el 21/10/2026, 06:27 UTC, en Codespaces:** se consultó `GET /inventory` y se obtuvo `ABC-01=96`, `TEST-03=6`, `XYZ-02=20`. A continuación se envió `POST /inventory/adjustments` con `sku=TEST-03`, `operacion=establecer`, `cantidad=1` y `existenciaEsperada=999999` (valor deliberadamente incorrecto).
+
+**Resultado:** Nginx devolvió **HTTP 409 Conflict** con `{"mensaje":"Las existencias cambiaron. Actualiza y vuelve a intentar.","disponibleActual":6}`. La nueva consulta `GET /inventory` devolvió **exactamente las mismas tres existencias**: 96, 6 y 20.
+
+**Conclusión:** el ajuste basado en un saldo obsoleto no sobrescribe ni modifica el inventario. No se crearon pedidos; este ensayo no equivale a probar un conflicto entre dos peticiones simultáneas, que se cubre parcialmente mediante el test de PostgreSQL.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
