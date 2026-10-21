@@ -191,7 +191,7 @@ La funcionalidad WebSocket quedó restaurada y el sistema regresó al estado de 
 4. Se crearon la red `q10-orderflow-clean-audit_default` y volúmenes nuevos para PostgreSQL y RabbitMQ, independientes del proyecto original.
 5. `docker compose ps` mostró los cinco servicios `Up`; PostgreSQL y RabbitMQ aparecieron `healthy`; el frontend publicó el puerto `8080`.
 
-**Estado:** compilación y arranque de contenedores desde un clon nuevo aprobados dentro del mismo Codespace. **Pendiente:** HTTP `/health/ready`, seed, `GET /orders` inicial y creación/reserva real de pedidos desde esta copia. El ensayo no demuestra todavía portabilidad en otro host ni elimina la particularidad de `iptables-legacy` observada anteriormente en este Codespace.
+**Estado ampliado:** los contenedores del clon arrancaron, y posteriormente se comprobaron la API, el seed, la lista vacía y un pedido confirmado. Ver «Recorrido completo desde la copia limpia». El ensayo no demuestra todavía portabilidad en otro host ni elimina la particularidad de `iptables-legacy` observada anteriormente en este Codespace.
 
 ### Recuperación de la conectividad en el clon
 
@@ -199,8 +199,27 @@ En la red nueva de la copia limpia, la conexión TCP inicial entre contenedores 
 
 Tras `docker compose restart orders-api inventory-worker`, `docker compose ps` mostró los cinco servicios activos y PostgreSQL/RabbitMQ saludables. La petición `curl -i --max-time 15 http://localhost:8080/health/ready` respondió **HTTP 200** con `{"status":"ready"}`.
 
-**Alcance:** API lista y accesible desde la instalación recién clonada dentro del Codespace. Sigue pendiente comprobar el catálogo inicial, la lista vacía y la creación/reserva de un pedido desde esa instalación. El ajuste temporal de reglas del host no se incluyó en el repositorio y no demuestra, por sí solo, despliegue en cualquier máquina Docker.
+**Alcance:** API lista en el clon. El catálogo y el pedido se comprobaron posteriormente, como consta en el recorrido completo documentado. El ajuste temporal de reglas del host no se incluyó en el repositorio y no demuestra, por sí solo, despliegue en cualquier máquina Docker.
 
+
+### Recorrido completo desde la copia limpia — aprobado
+
+**Fecha observada:** 21/10/2026 UTC (20/10/2026 en Colombia).
+
+Una vez restablecida la comunicación entre contenedores del Codespace, se comprobó mediante el mismo puerto 8080 de la copia independiente:
+
+| Comprobación en copia limpia | Resultado |
+|---|---|
+| `GET /health/ready` | HTTP 200, `{"status":"ready"}` |
+| `GET /products` | HTTP 200; SKU `ABC-01`, `XYZ-02`, `TEST-03` |
+| `GET /orders` inicial | HTTP 200, lista vacía `[]` |
+| `POST /orders`, `ABC-01`, cantidad 1 | HTTP 201 y `Pending` |
+| `GET /orders` posterior | Mismo pedido en `Confirmed` |
+| Stock de la copia independiente | `ABC-01=99`, `TEST-03=3`, `XYZ-02=25` |
+
+El pedido de prueba fue `69e7df92-5e33-46ef-93de-2073c208fbd1`; se creó a las 02:27:30 UTC y se confirmó a las 02:27:31 UTC (aprox. 1,10 s después). Estos valores corresponden **solo** a la copia limpia, sin modificar la instalación original de siete pedidos.
+
+**Conclusión:** compilación, inicialización de datos, API, mensajería y reserva quedaron verificadas desde una copia nueva con red y volúmenes propios dentro de este Codespace. No se ha demostrado portabilidad a otro host Docker. El firewall de este Codespace necesitó una regla temporal de puente; no se debe presentar esa corrección como un requisito de instalación normal.
 
 ## Pendiente de aprobación
 
@@ -214,7 +233,8 @@ Tras `docker compose restart orders-api inventory-worker`, `docker compose ps` m
 - [x] Establecer WebSocket y recibir `ordersChanged` por SignalR (HTTP 101 y frame `type:1`).
 - [x] Comprobar polling de respaldo con SignalR bloqueado: contadores 6→7 y confirmados 5→6, sin recargar.
 - [x] Ensamblar manifiestos Kubernetes con Kustomize; ConfigMap, Service y Deployment obtenidos (validación contra un clúster no realizada).
-- [ ] Ejecutar el arranque obligatorio desde copia limpia en un host Docker sin ajustes especiales.
+- [x] Ejecutar y comprobar funcionalmente una copia limpia con volúmenes independientes en el mismo Codespace (requiere ajuste temporal del firewall del host).
+- [ ] Comprobar despliegue en un host Docker diferente sin ajustes especiales; el comando literal `docker compose up` en primer plano no fue el utilizado en este ensayo (se usó `docker compose up -d --build`).
 - [ ] Revisar la consistencia final entre README, código y guía de defensa.
 
 Los elementos pendientes no deben presentarse como pruebas realizadas.
