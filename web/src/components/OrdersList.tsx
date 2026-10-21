@@ -163,7 +163,8 @@ export function OrdersList({
                           >
                             {checkingRepeatId === order.id
                               ? 'Verificando existencias...'
-                              : canRepeat ? 'Crear nuevo pedido' : 'Esperando reposición'}
+                              : canRepeat ? 'Crear nuevo pedido' :
+                                !stockReady ? 'Inventario sin verificar' : 'Esperando reposición'}
                           </button>
                           {!canRepeat && (
                             <span className="retry-stock-hint">
