@@ -28,22 +28,25 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 
 ## Ampliación solicitada de interfaz e inventario — pendiente de validación
 
-- [ ] Construir el Worker con ASP.NET Core y consultar `GET /inventory` a través de Nginx.
-- [ ] Ejecutar `POST /inventory/adjustments` para agregar unidades, establecer existencias y rechazar un saldo obsoleto con HTTP 409.
+- [x] Worker ASP.NET Core compilado; `GET /inventory` respondió HTTP 200 con los tres SKU y se comprobó negociación SignalR HTTP 200.
+- [x] Registrar ingreso y reemplazo de existencias desde la interfaz (`TEST-03` 3→6 y posterior ajuste de total); respuesta visual confirmada y actualización de tarjetas.
+- [ ] Comprobar HTTP 409 de `POST /inventory/adjustments` con `existenciaEsperada` incorrecta sin afectar existencias.
 - [x] Comprobar que un ajuste de existencias conserva los siete pedidos previos y sus estados (capturas: 7, 6 Confirmed, 1 Rejected).
-- [ ] Comprobar una nueva reserva después de los ajustes de stock.
-- [ ] Ejecutar nuevamente las cinco pruebas backend: el test de concurrencia ahora añade aserciones para las operaciones administrativas.
-- [ ] Revisar la imagen de portada aportada por el candidato, el sombreado de contraste, degradados, figuras discretas, responsive y scroll interno del listado de pedidos.
+- [x] Se observó una reserva nueva de `TEST-03` ×5 confirmada tras actualizar inventario a 6: panel con 9 pedidos, 7 confirmados y 2 rechazados. La creación de esa solicitud con cantidad cambiada reveló otro fallo del flujo de repetición, que se corrigió posteriormente.
+- [x] El comando `docker compose --profile tests run --build --rm backend-tests` volvió a pasar 5/5 después de incorporar SignalR de inventario y sus aserciones (registro compartido por el candidato).
+- [x] Revisado visualmente en capturas: portada fotográfica con contraste, tarjetas, diseño móvil a 530 px, altura y scroll interno de seguimiento, y encabezados de SKU.
+- [ ] Comprobar visualmente el cierre manual y centrado de las notificaciones introducidas después de las capturas; volver a compilar el frontend desde el último commit.
 - [x] Comprobar señalización WebSocket de inventario: conexiones `/hubs/inventory` y `/hubs/orders` con HTTP 101; el usuario confirmó recepción del mensaje `inventoryChanged` al ajustar existencias desde una segunda pestaña, sin recargar la receptora. Confirmación comunicada, sin captura del frame final.
 - [ ] Comprobar el mensaje `inventoryChanged` generado específicamente por una reserva nueva.
 - [ ] Comprobar recuperación de existencias por polling de 10 s al bloquear exclusivamente SignalR de inventario.
 - [ ] Comprobar que «Crear nuevo pedido» **permanece deshabilitado** cuando la cantidad de existencias es menor que la solicitada, y se habilita automáticamente tras una reposición suficiente.
 - [x] Comprobar bloqueo del envío desde un rechazado cuando la cantidad solicitada excede el stock: TEST-03 solicitó 5 con 4 disponibles; error visible y 8 pedidos conservados. La implementación usa GET /inventory con `cache: no-store` antes del POST.
 - [ ] Comprobar el escenario de fallo de consulta y la habilitación/deshabilitación del botón al variar el stock, y crear finalmente una reserva exitosa con cantidad disponible.
-- [ ] **Repetición exacta:** con un rechazado original por 4 unidades y stock actual de al menos 5, cambiar la cantidad a 5 debe mostrar error inmediato y mantener «Confirmar repetición» deshabilitado; el total de pedidos no debe aumentar.
+- [x] **Repetición exacta:** a partir de un rechazado original por 4 unidades, cambiar la cantidad a 3 mostró error rojo inmediato y «Confirmar repetición» deshabilitado, con 9 pedidos sin aumento (captura compartida). El caso 4→5 fue la causa original de la corrección.
 - [ ] Volver la cantidad a 4 debe permitir confirmar la repetición, previa verificación nueva de GET /orders/{id} y GET /inventory; el pedido original debe permanecer Rejected.
 - [ ] «Cancelar repetición» debe restaurar el registro manual; el flujo normal de Q10 no debe quedar bloqueado para cantidades distintas.
-- [ ] Confirmar que el pedido `Rejected` original conserva su estado y que solo aparece un identificador nuevo al guardar explícitamente con stock suficiente.
+- [x] El panel mostró 9 pedidos: 7 confirmados y 2 rechazados; los rechazados conservaron su estado tras la reposición. La creación de una solicitud nueva confirmada se observó antes de imponer la equivalencia estricta.
+- [ ] Validar una repetición exacta (mismo cliente, SKU y cantidad), sin reutilizar el identificador anterior, en un ensayo controlado.
 - [ ] Comprobar que el formulario normal sigue aceptando un pedido válido insuficiente con HTTP 201 Pending, para que Inventory lo resuelva a Rejected según Q10.
 - [ ] Fusionar la rama de cambios en `main` solamente después de compilar y comprobar el flujo.
 
