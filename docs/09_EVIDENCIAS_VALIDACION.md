@@ -344,6 +344,14 @@ La primera ejecución del perfil de siete pruebas pasó 3 de dominio, pero falla
 
 **Todavía pendiente:** demostrar que Orders API e Inventory Worker responden HTTP 200 después de estabilizar su arranque, probar el alta de producto por la interfaz y confirmar persistencia sin modificar los pedidos históricos. Esta rama continúa separada de `main`.
 
+## 502 persistente de Nginx tras recrear Orders e Inventory — diagnóstico y corrección
+
+**Observado el 21/10/2026:** después de restablecer la conectividad de la red Docker, el perfil de pruebas terminó con **7/7** aprobadas y ambos servicios mostraron operaciones SQL de PostgreSQL completadas en milisegundos. Sin embargo, Nginx devolvía **502 Bad Gateway** en `/health/ready`, `/products` e `/inventory` incluso tres minutos después del reinicio de los servicios. La vista `docker compose ps` indicaba que `web` llevaba 11 minutos sin recrearse, frente a los tres minutos desde el último arranque de Orders e Inventory.
+
+**Causa probable respaldada por la configuración:** el Nginx anterior empleaba `proxy_pass http://orders-api:8080` y `proxy_pass http://inventory-worker:8081` con nombres resueltos al inicio. Tras recrear contenedores, las direcciones IP internas pueden cambiar y Nginx mantener las antiguas. Este diagnóstico requiere confirmación final por HTTP; los logs de Nginx no se incluyeron en la evidencia recibida.
+
+**Corrección incorporada en la rama, pendiente de comprobar en Codespaces:** el archivo `infra/nginx/default.conf` utiliza el resolver interno de Docker `127.0.0.11` con validez de 10 segundos y `proxy_pass` mediante nombres de upstream variables. Se conservan los cuatro proxies (Orders, Inventory y ambos Hubs), sus rutas, cabeceras y timeouts. La reconstrucción afecta exclusivamente a la imagen web; no cambia tablas ni pedidos. Falta verificar HTTP 200, el catálogo, las existencias y negociación de ambos hubs.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
