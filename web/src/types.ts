@@ -17,6 +17,11 @@ export interface Product {
   nombre: string;
 }
 
+/** Alta de producto: se registra en Orders e Inventory antes de confirmar. */
+export interface CreateProductRequest extends Product {
+  disponible: number;
+}
+
 export interface CreateOrderRequest {
   clienteNombre: string;
   sku: string;
