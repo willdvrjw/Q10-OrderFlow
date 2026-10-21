@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { ApiError, adjustInventory, getInventory } from '../lib/api';
 import type { InventoryOperation, InventoryStock, Product } from '../types';
@@ -6,13 +7,18 @@ import type { InventoryOperation, InventoryStock, Product } from '../types';
 interface Props {
   products: Product[];
 }
-
 type Feedback = { kind: 'success' | 'error'; text: string } | null;
 
+function stockStatus(available: number) {
+  if (available === 0) return { label: 'Agotado', kind: 'empty' };
+  if (available <= 5) return { label: 'Existencias bajas', kind: 'low' };
+  return { label: 'Disponible', kind: 'available' };
+}
+
 /**
- * Permite consultar, sumar o establecer existencias sin acceder a Orders DB.
- * El servidor exige el saldo leído: un ajuste obsoleto recibe 409 y no pisa
- * una reserva concurrente. Es una consola administrativa de demostración.
+ * Únicamente Inventory gestiona existencias. SignalR avisa tras cada reserva
+ * o ajuste confirmado; GET /inventory sigue siendo la fuente de verdad.
+ * El polling mantiene actualizado el panel si se pierde la conexión en vivo.
  */
 export function InventoryManager({ products }: Props) {
   const [stock, setStock] = useState<InventoryStock[]>([]);
@@ -21,25 +27,83 @@ export function InventoryManager({ products }: Props) {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [connected, setConnected] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const lastRequest = useRef(0);
 
   const refresh = useCallback(async () => {
+    const requestId = ++lastRequest.current;
     try {
       const current = await getInventory();
+      if (requestId !== lastRequest.current) return;
       setStock(current);
       setLoadError(null);
     } catch {
-      setLoadError('No fue posible consultar el inventario. Reintenta la consulta.');
+      if (requestId === lastRequest.current) {
+        setLoadError('No fue posible consultar el inventario. Reintenta la consulta.');
+      }
     } finally {
-      setLoading(false);
+      if (requestId === lastRequest.current) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    let disposed = false;
+    let connecting = false;
     void refresh();
-    const timer = window.setInterval(() => void refresh(), 10000);
-    return () => window.clearInterval(timer);
+
+    const connection = new HubConnectionBuilder()
+      .withUrl('/hubs/inventory')
+      .withAutomaticReconnect([0, 1500, 4000, 10000, 30000])
+      .configureLogging(LogLevel.Warning)
+      .build();
+
+    connection.on('inventoryChanged', () => {
+      if (!disposed) void refresh();
+    });
+    connection.onreconnecting(() => {
+      if (!disposed) setConnected(false);
+    });
+    connection.onreconnected(() => {
+      if (!disposed) {
+        setConnected(true);
+        void refresh();
+      }
+    });
+    connection.onclose(() => {
+      if (!disposed) setConnected(false);
+    });
+
+    const start = async () => {
+      if (disposed || connecting || connection.state !== HubConnectionState.Disconnected) return;
+      connecting = true;
+      try {
+        await connection.start();
+        if (!disposed) {
+          setConnected(true);
+          void refresh();
+        }
+      } catch {
+        if (!disposed) setConnected(false);
+      } finally {
+        connecting = false;
+      }
+    };
+    void start();
+
+    // También reintenta el inicio fallido de SignalR, además de consultar stock.
+    const interval = window.setInterval(() => {
+      if (disposed) return;
+      void refresh();
+      void start();
+    }, 10000);
+    return () => {
+      disposed = true;
+      ++lastRequest.current;
+      window.clearInterval(interval);
+      void connection.stop();
+    };
   }, [refresh]);
 
   useEffect(() => {
@@ -53,7 +117,7 @@ export function InventoryManager({ products }: Props) {
   const validAmount = amount.trim() !== '' &&
     Number.isInteger(requestedAmount) &&
     requestedAmount >= (operation === 'agregar' ? 1 : 0) &&
-    requestedAmount <= 1000000;
+    requestedAmount <= 1_000_000;
   const projected = selected && validAmount
     ? operation === 'agregar' ? selected.disponible + requestedAmount : requestedAmount
     : null;
@@ -64,8 +128,8 @@ export function InventoryManager({ products }: Props) {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (saving || !selected) return;
-    if (!validAmount || projected === null || projected > 2147483647) {
-      setFeedback({ kind: 'error', text: 'Introduce una cantidad entera válida para realizar el ajuste.' });
+    if (!validAmount || projected === null || projected > 2_147_483_647) {
+      setFeedback({ kind: 'error', text: 'Introduce una cantidad entera válida para el ajuste.' });
       return;
     }
 
@@ -80,8 +144,8 @@ export function InventoryManager({ products }: Props) {
       });
       setFeedback({
         kind: 'success',
-        text: 'Existencias actualizadas para ' + selected.sku + ': ' +
-          result.disponible.toLocaleString('es-CO') + ' unidades disponibles.',
+        text: 'Existencias actualizadas: ' +
+          result.disponible.toLocaleString('es-CO') + ' unidades disponibles de ' + selected.sku + '.',
       });
       setAmount('');
       await refresh();
@@ -104,11 +168,17 @@ export function InventoryManager({ products }: Props) {
         <div>
           <span className="eyebrow">CONTROL DE EXISTENCIAS</span>
           <h2 id="inventory-title">Inventario disponible</h2>
-          <p>Consulta las cantidades actuales y registra nuevas existencias sin modificar los pedidos anteriores.</p>
+          <p>Consulta existencias y registra ingresos o ajustes. Las reservas de pedidos se reflejan automáticamente.</p>
         </div>
-        <button className="refresh-button" type="button" onClick={() => void refresh()} aria-label="Actualizar inventario">
-          <span aria-hidden="true">↻</span> Actualizar
-        </button>
+        <div className="inventory-heading-actions">
+          <span className={'inventory-sync' + (connected ? ' live' : '')} role="status">
+            <span className="inventory-sync-dot" aria-hidden="true" />
+            {connected ? 'En tiempo real' : 'Actualización periódica'}
+          </span>
+          <button className="refresh-button" type="button" onClick={() => void refresh()} aria-label="Actualizar inventario">
+            <span aria-hidden="true">↻</span> Actualizar
+          </button>
+        </div>
       </div>
 
       {loadError && <div className="notice error inventory-error" role="alert">{loadError}</div>}
@@ -118,23 +188,27 @@ export function InventoryManager({ products }: Props) {
             <div className="inventory-loading">Consultando inventario...</div>
           ) : stock.length === 0 ? (
             <div className="inventory-loading">No se encontraron productos con existencias registradas.</div>
-          ) : stock.map(item => (
-            <button
-              className={'stock-card' + (selectedSku === item.sku ? ' selected' : '')}
-              key={item.sku}
-              type="button"
-              onClick={() => { setSelectedSku(item.sku); setFeedback(null); }}
-              aria-pressed={selectedSku === item.sku}
-            >
-              <span className="stock-card-name">{productName(item.sku)}</span>
-              <span className="stock-card-sku">{item.sku}</span>
-              <span className="stock-card-bottom">
-                <strong>{item.disponible.toLocaleString('es-CO')}</strong>
-                <span>unidades disponibles</span>
-              </span>
-            </button>
-          ))}
-          <p className="stock-note">Las existencias se actualizan automáticamente cada 10 segundos.</p>
+          ) : stock.map(item => {
+            const status = stockStatus(item.disponible);
+            return (
+              <button
+                className={'stock-card' + (selectedSku === item.sku ? ' selected' : '')}
+                key={item.sku}
+                type="button"
+                onClick={() => { setSelectedSku(item.sku); setFeedback(null); }}
+                aria-pressed={selectedSku === item.sku}
+              >
+                <span className="stock-card-name">{productName(item.sku)}</span>
+                <span className="stock-card-sku">{item.sku}</span>
+                <span className={'stock-card-status ' + status.kind}>{status.label}</span>
+                <span className="stock-card-bottom">
+                  <strong>{item.disponible.toLocaleString('es-CO')}</strong>
+                  <span>unidades disponibles</span>
+                </span>
+              </button>
+            );
+          })}
+          <p className="stock-note">Las alertas de existencias bajas son informativas (5 unidades o menos). No modifican la reserva de pedidos.</p>
         </div>
 
         <form className="inventory-editor" onSubmit={event => void submit(event)} noValidate>
@@ -179,19 +253,19 @@ export function InventoryManager({ products }: Props) {
           />
           <div className="inventory-preview" aria-live="polite">
             <span>Disponibles ahora <strong>{selected?.disponible.toLocaleString('es-CO') ?? '—'}</strong></span>
-            <span>Después del ajuste <strong>{projected !== null && projected <= 2147483647 ? projected.toLocaleString('es-CO') : '—'}</strong></span>
+            <span>Después del ajuste <strong>{projected !== null && projected <= 2_147_483_647 ? projected.toLocaleString('es-CO') : '—'}</strong></span>
           </div>
           {operation === 'establecer' && (
             <p className="inventory-warning">Esta opción reemplaza el total actual. Comprueba las existencias antes de guardar.</p>
           )}
           <button className="primary-button" type="submit"
-            disabled={saving || !selected || !validAmount || projected === null || projected > 2147483647}>
+            disabled={saving || !selected || !validAmount || projected === null || projected > 2_147_483_647}>
             {saving ? 'Guardando ajuste...' : 'Guardar existencias'}
           </button>
           {feedback && (
             <div className={'notice ' + feedback.kind} role="status" aria-live="polite">{feedback.text}</div>
           )}
-          <p className="inventory-disclaimer">Los ajustes modifican únicamente el stock actual del entorno de prueba.</p>
+          <p className="inventory-disclaimer">Las existencias actualizadas se utilizarán para las reservas de pedidos nuevos o todavía pendientes de procesamiento.</p>
         </form>
       </div>
     </section>
