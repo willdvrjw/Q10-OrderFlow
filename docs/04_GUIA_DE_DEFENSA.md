@@ -1,60 +1,85 @@
-# 04. Guía de defensa técnica en entrevista
+# 04. Guía de defensa técnica — Q10-OrderFlow
 
-Las respuestas siguientes son intenciones arquitectónicas que deben poder demostrarse sobre el código real. No memorizar sin entender; una evaluación en vivo puede pedir modificaciones.
+Esta guía describe **el código efectivamente incorporado en el repositorio**, no rutas hipotéticas. Su objetivo es que el candidato pueda explicar, localizar, modificar y comprobar el sistema durante una entrevista en vivo. No memorizar respuestas sin entender su implementación.
 
-## Qué debes poder responder y demostrar
+## Recorrido de negocio en 90 segundos
 
-**¿Por qué se crea Pending y no Confirmed?** Porque crear un pedido no equivale a reservar inventario. La reserva se resuelve después, por evento.
+1. El usuario registra nombre, SKU existente y cantidad de 1 a 100 desde React. La API valida nuevamente, porque el frontend no es una frontera confiable.
+2. `POST /orders` responde HTTP **201 Created** con `Pending`. El pedido y `OrderCreated` se guardan en la misma transacción PostgreSQL; el evento queda en Outbox.
+3. `OrdersOutboxDispatcher` publica `OrderCreated` a RabbitMQ con confirmación. Si el broker falla, el pedido no se pierde: el evento queda pendiente.
+4. `OrderCreatedConsumer` consume el evento con ACK manual. `OrderCreatedHandler` registra el `OrderId` único, ejecuta el descuento atómico condicionado al stock y registra el resultado y su Outbox en una transacción.
+5. `InventoryOutboxDispatcher` publica `StockReserved` o `StockRejected`. `StockResultHandler` registra el `EventId` en Inbox y transiciona el pedido terminalmente a `Confirmed` o `Rejected`.
+6. SignalR emite `ordersChanged` para pedir al navegador actualizar datos; un polling periódico a `GET /orders` recupera la información si WebSocket se interrumpe.
 
-**¿Qué devuelve POST?** 201 Created con pedido persistido en Pending; la confirmación no se espera síncronamente.
+**Invariantes:** no hay confirmación sin reserva; no se descuenta dos veces el mismo pedido; no hay stock negativo; los estados terminales no revierten; cada servicio es dueño de su base.
 
-**¿Qué distingue 400 de Rejected?** 400 es petición inválida (SKU fuera del catálogo, cantidad fuera del rango o nombre vacío); Rejected es un pedido válido al que le faltó stock.
+## Preguntas de entrevista y criterios
 
-**¿Por qué un servicio no consulta la base del otro?** Cada servicio es dueño de su estado, y comunica hechos mediante eventos; evita acoplamiento al esquema y a transacciones entre servicios.
+**¿Por qué Pending en el POST?** La reserva ocurre en otro proceso y no debe asumirse exitosa por el simple registro del pedido. HTTP 201 confirma creación del recurso, no inventario.
 
-**¿Qué es consistencia eventual aquí?** Durante un intervalo el pedido existe en Pending aunque Inventory ya esté procesando; la vista converge al resultado confirmado o rechazado cuando el evento es consumido.
+**¿Qué diferencia 400 de Rejected?** `400` rechaza una entrada inválida (cliente vacío, SKU inexistente, cantidad fuera de rango). `Rejected` es el estado de un pedido válido que no obtuvo inventario; su creación respondió 201.
 
-**¿Qué pasa con RabbitMQ apagado?** La orden y el evento quedan persistidos en Orders; un despachador reintenta su publicación. Nunca se confunde publicación pendiente con pedido rechazado.
+**¿Por qué dos bases?** Orders e Inventory tienen propiedad independiente de sus datos. Comparten una instancia PostgreSQL por simplicidad de la demostración, pero no comparten tablas ni transacciones.
 
-**¿Por qué outbox?** No existe una transacción única entre PostgreSQL y RabbitMQ. Guardar estado y evento en la misma base local evita que se pierda el evento tras un COMMIT exitoso.
+**¿Qué significa consistencia eventual?** Una consulta inmediatamente posterior al POST puede ver `Pending`, y más tarde `Confirmed` o `Rejected` cuando lleguen los eventos.
 
-**¿Qué pasa si el broker recibe el evento pero el despachador muere antes de marcarlo enviado?** El mismo evento puede publicarse de nuevo; el consumidor es idempotente.
+**¿Para qué Outbox?** PostgreSQL y RabbitMQ no participan en un mismo COMMIT atómico. Persistir evento y cambio de negocio juntos evita el hueco entre guardar el pedido y publicar el evento.
 
-**¿Cómo garantizamos la idempotencia?** Registro único de efecto por `orderId` bajo transacción y clave única. Duplicar un `eventId` o recibir otro evento de creación para el mismo pedido no vuelve a descontar.
+**¿Exactly-once?** No prometemos entrega única por red. RabbitMQ puede reentregar mensajes. El efecto de negocio está protegido por una clave única `OrderId` y la transacción de inventario; `EventId` identifica cada entrega o resultado.
 
-**¿Cómo garantizamos stock no negativo?** `UPDATE` atómico con condición `disponible >= cantidad`; el número de filas actualizadas determina si se reservó.
+**¿Y si dos reservas llegan simultáneamente?** PostgreSQL ejecuta un UPDATE condicionado a `disponible >= cantidad`, de modo que las operaciones concurrentes no pueden consumir más unidades que las disponibles. Se probó con dos DbContext y transacciones separadas.
 
-**¿Por qué ACK manual?** RabbitMQ no debe retirar el mensaje antes de que se confirme la transacción que lo procesa. Un fallo permite redelivery.
+**¿Qué sucede si RabbitMQ está caído?** Orders sigue admitiendo pedidos y almacenando eventos. Al regresar el broker, el despachador reintenta y el pedido termina de procesarse. Esto se observó en pruebas reales.
 
-**¿Qué es una dead-letter queue?** Una cola separada para mensajes que no se pueden procesar y requieren diagnóstico; evita bucles silenciosos.
+**¿Qué sucede si el Worker está detenido?** El pedido queda en `Pending`, el broker conserva el evento y el procesamiento continúa al reanudar el Worker. También se verificó.
 
-**¿Por qué SignalR junto a polling?** SignalR aporta baja latencia; polling garantiza que un cliente recupere el estado luego de pérdidas de conexión o notificaciones.
+**¿Qué pasa entre COMMIT y ACK?** Ante fallo, RabbitMQ puede entregar otra vez el evento. El consumidor debe reconocer que `OrderId` ya fue procesado; no repetir stock. La idempotencia se probó en PostgreSQL, pero no se forzó una caída exactamente en ese instante.
 
-**¿Por qué Docker Compose?** Reproduce servicios, red, orden de inicio, persistencia y semillas sin instalaciones locales independientes.
+**¿Qué hace la DLQ?** Mensajes irrecuperables (formato o versión inválidos) se apartan para diagnóstico en lugar de provocar reintentos infinitos.
 
-**¿Qué cambia en Kubernetes?** Incluimos Deployment (una réplica), Service interno, ConfigMap, startup/liveness/readiness y CPU/memoria. El Secret se gestiona fuera de Git y las bases/broker requieren servicios independientes. Se usa una réplica porque Outbox y SignalR aún no incorporan coordinación multinodo. Ver `docs/08_KUBERNETES.md`.
+**¿Por qué SignalR y polling?** SignalR permite respuesta inmediata; polling recupera coherencia si falla WebSocket. Se verificó en el navegador un frame `ordersChanged` y, en una prueba aparte, polling con la ruta SignalR bloqueada.
 
-**¿Qué harías diferente en producción?** Catálogo con servicio dueño, telemetría centralizada, secretos gestionados, almacenamiento/broker de alta disponibilidad, migraciones supervisadas, pruebas de caos y políticas de seguridad.
+**¿Por qué un solo pod en Kubernetes?** Los publicadores Outbox aún no incorporan leasing distribuido y SignalR usa conexiones locales. Una sola réplica evita suposiciones de escalamiento no probadas. El bonus trae recursos declarativos y no exige clúster activo.
 
-## Rutas previstas para modificaciones en vivo
+## Rutas exactas de la implementación y cómo modificarla
 
-Estas rutas son un **contrato de organización propuesto**, no archivos implementados aún:
-
-| Modificación solicitada | Ruta prevista | Cómo verificar |
+| Qué te pueden pedir | Archivo(s) real(es) | Comprobación |
 |---|---|---|
-| Regla de cliente/cantidad/SKU | `src/Orders.Api/Application/Orders/OrderValidator.cs` | Tests de validación y HTTP 400 |
-| POST/GET de pedidos | `src/Orders.Api/Endpoints/OrdersEndpoints.cs` | Curl/UI y códigos HTTP |
-| Estados y transiciones | `src/Orders.Api/Domain/Order.cs` | Tests transición confirmada/rechazada |
-| Publicación diferida | `src/Orders.Api/Infrastructure/Outbox/OrdersOutboxDispatcher.cs` | Parar broker, crear, reiniciar |
-| Consumidor de resultados | `src/Orders.Api/Infrastructure/Messaging/StockResultConsumer.cs` | Duplicar evento/estado único |
-| Descuento atómico | `src/Inventory.Worker/Infrastructure/StockReservationRepository.cs` | Tests de concurrencia |
-| Idempotencia del worker | `src/Inventory.Worker/Application/OrderCreatedHandler.cs` | Reentrega del mismo pedido |
-| Publicación de reservas | `src/Inventory.Worker/Infrastructure/Outbox/InventoryOutboxDispatcher.cs` | Reanudar después de error |
-| Catálogo de prueba | `seed/products.json` | Reiniciar sin sobrescribir stock |
-| Actualización de pedidos | `web/src/hooks/useOrdersLive.ts` | Desconectar SignalR |
-| Formulario | `web/src/components/OrderForm.tsx` | Validaciones y errores visibles |
-| Tokens de estilo | `web/src/styles/tokens.css` | Desktop/móvil, contraste |
-| Configuración de puertos | `compose.yaml` y `infra/nginx/default.conf` | `docker compose up` y GET `/orders` |
-| Despliegue de bonus | `k8s/orders-api-deployment.yaml` | Validación sintáctica YAML |
+| Cambiar validación del pedido | `src/Orders.Api/Application/Orders/OrderValidator.cs`, `src/Orders.Api/Domain/Order.cs` | `OrderBusinessRulesTests.cs`, HTTP 400 |
+| Cambiar límite de cantidad en el formulario | `web/src/components/OrderForm.tsx` **y** validaciones backend mencionadas arriba | Formulario + HTTP + tests |
+| Cambiar POST, GET o respuesta | `src/Orders.Api/Endpoints/OrdersEndpoints.cs` | curl y tabla del frontend |
+| Cambiar estados o transiciones | `src/Orders.Api/Domain/OrderStatus.cs`, `src/Orders.Api/Domain/Order.cs` | Tests de dominio y flujo |
+| Cambiar catálogo o cantidades iniciales | `seed/products.json`; carga en `src/Orders.Api/Application/Orders/ProductCatalog.cs` y `src/Inventory.Worker/Infrastructure/Persistence/InventoryDatabaseInitializer.cs` | Arranque con volumen nuevo; no sobrescribir stock consumido |
+| Cambiar contratos de eventos | `src/OrderFlow.Contracts/Events/OrderEvents.cs` | Compilar productores y consumidores; verificar serialización |
+| Cambiar rutas o colas RabbitMQ | `src/OrderFlow.Messaging/RabbitMqTopology.cs` | Consumo/publicación y DLQ |
+| Cambiar confirmación de publicación | `src/OrderFlow.Messaging/RabbitMqTransport.cs` | Broker disponible / indisponible |
+| Cambiar reintentos o ACK del consumidor | `src/OrderFlow.Messaging/RabbitMqConsumerLoop.cs` | Recuperación Worker/broker |
+| Cambiar publicación de pedidos | `src/Orders.Api/Infrastructure/Messaging/OrdersOutboxDispatcher.cs` | Detener broker, crear, recuperar |
+| Cambiar recepción y aplicación de resultados | `src/Orders.Api/Infrastructure/Messaging/StockResultConsumer.cs`, `src/Orders.Api/Application/Orders/StockResultHandler.cs` | Estado terminal e Inbox |
+| Cambiar modelo/tablas de pedidos | `src/Orders.Api/Infrastructure/Persistence/OrdersDbContext.cs` | Probar sobre base nueva; documentar esquema |
+| Cambiar lógica de reserva, idempotencia o SQL atómico | `src/Inventory.Worker/Application/OrderCreatedHandler.cs` | `InventoryIntegrationTests.cs` en PostgreSQL |
+| Cambiar las tablas de stock, pedidos procesados u Outbox de Inventory | `src/Inventory.Worker/Infrastructure/Persistence/InventoryDbContext.cs` | Tests PostgreSQL aislados |
+| Cambiar publicación del resultado de inventario | `src/Inventory.Worker/Infrastructure/Messaging/InventoryOutboxDispatcher.cs` | Evento reservado/rechazado |
+| Cambiar datos mostrados, polling o SignalR | `web/src/hooks/useOrdersLive.ts`, `web/src/types.ts`, `web/src/lib/api.ts` | WebSocket 101, frame de evento y fallback |
+| Cambiar formulario | `web/src/components/OrderForm.tsx` | Errores visibles y POST |
+| Cambiar tabla/filtros/estados visibles | `web/src/components/OrdersList.tsx` | UI con pedidos Pending/Confirmed/Rejected |
+| Cambiar estilos responsivos | `web/src/style.css` | Vista escritorio y móvil |
+| Cambiar puertos, proxy y variables del despliegue | `compose.yaml`, `infra/nginx/default.conf` | `docker compose config --quiet` y GET /health/ready |
+| Cambiar probes/límites Kubernetes | `k8s/orders-api-deployment.yaml` | `kubectl kustomize k8s` y revisar YAML resultante |
 
-Cada ruta será confirmada una vez generado el código y deberá reflejarse en este documento si cambia.
+Las rutas de esta tabla corresponden a archivos existentes en el repositorio. No editar solo el frontend cuando la regla de negocio debe permanecer en el servidor.
+
+## Evidencia disponible y límites de las pruebas
+
+- **Aprobado:** cinco tests backend, incluidos idempotencia y concurrencia con PostgreSQL; estado Pending/Confirmed/Rejected; validaciones HTTP; recuperaciones de Worker y broker; SignalR, polling y persistencia tras reinicio.
+- **Aprobado en el mismo Codespace:** clon local con redes y volúmenes nuevos, endpoints HTTP operativos y pedido confirmado. El Codespace requirió una corrección temporal de `iptables-legacy` específica del host.
+- **Kubernetes:** manifiestos ensamblados con `kubectl kustomize k8s`; no se ha desplegado clúster.
+- **No afirmado:** ejecución independiente en un host Docker distinto ni fallo inyectado exactamente entre COMMIT y ACK.
+
+La evidencia detallada está en `docs/09_EVIDENCIAS_VALIDACION.md`.
+
+## Qué cambiaría para producción
+
+Migraciones versionadas; roles mínimos y secretos gestionados; catálogo de propiedad única; reintentos con política y observabilidad completa; coordinación de Outbox para réplicas; SignalR con soporte multinodo; alertas, backups y más pruebas de caos.
+
+La prioridad en esta evaluación es mantener funcionamiento comprobable y poder explicar exactamente cada compromiso técnico.
