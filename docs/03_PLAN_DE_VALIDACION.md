@@ -75,15 +75,17 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [x] Cerrar la validación manual solicitada: siete pruebas aprobadas, alta/pedido/stock, unicidad API HTTP 409, persistencia idéntica de tres recursos tras reinicio y aprobación visual de escritorio/móvil.
 - [x] Integrar por **fast-forward** `feat/dynamic-products-and-console-quality` en `main` tras aprobar siete pruebas automáticas, flujo de alta/productos/inventario, SKU duplicado HTTP 409, persistencia y validación visual del usuario. Las entidades `Order`, `OrderStatus`, el manejador de reservas y los contratos de eventos originales permanecieron sin cambios. Se documentaron separadamente los ensayos adicionales no realizados.
 
-## Cinco pruebas backend implementadas y verificadas
+## Siete pruebas backend: cinco originales y dos de catálogo dinámico
 
 1. **Validación de entrada**: rechazo de nombre vacío, SKU desconocido y cantidad fuera del rango permitido mediante aserciones dentro del test de dominio.
 2. **Transición confirmada**: inicio en `Pending`, cambio permitido a `Confirmed` y prohibición de revertirlo (test del dominio, sin invocar Inventory).
 3. **Estado rechazado terminal**: un pedido `Rejected` no puede pasar después a `Confirmed` (test de dominio). El rechazo por falta de stock sin descuento se verificó aparte mediante REST y consulta SQL.
 4. **Idempotencia**: mismo `OrderId` recibido dos veces con `EventId` diferente; stock se descuenta una sola vez y solo se genera un resultado de reserva (PostgreSQL real).
 5. **Concurrencia**: dos reservas para el mismo SKU y stock limitado; máximo una gana y el saldo nunca es negativo.
+6. **Alta dinámica e idempotencia**: registra producto nuevo, comprueba que puede reservar inventario y demuestra que reintentos idénticos no restablecen existencias.
+7. **Protección del producto existente**: intenta registrar un SKU cuyo inventario ya existe y comprueba que no sobrescribe el saldo.
 
-Las dos pruebas de persistencia utilizan PostgreSQL real, contextos independientes y bases temporales aisladas. Se ejecutaron con éxito junto a las tres pruebas de dominio mediante `docker compose --profile tests run --build --rm backend-tests` (cinco aprobadas). Una simulación en memoria no demostraría la concurrencia real.
+Las **cuatro** integraciones de persistencia utilizan PostgreSQL real, conexiones/contextos independientes y bases temporales aisladas. El comando `docker compose --profile tests run --build --rm backend-tests` ejecutó exitosamente la suite ampliada (**7/7 aprobadas**) en Codespaces el 21/10/2026. Los cinco casos iniciales de Q10 permanecen; los dos extras justifican la ampliación de catálogo.
 
 ## Ensayos de fallos (manuales guiados)
 
