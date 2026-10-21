@@ -4,9 +4,9 @@ using Orders.Api.Domain;
 namespace OrderFlow.Tests;
 
 /// <summary>
-/// Primeros tres tests reales de dominio.
-/// Aún no demuestran persistencia, RabbitMQ ni concurrencia: esas pruebas
-/// se incorporarán cuando estén implementados el repositorio y el worker.
+/// Tres pruebas de reglas de dominio, sin acceso a infraestructura.
+/// La idempotencia y concurrencia se prueban por separado contra PostgreSQL
+/// en InventoryIntegrationTests; los flujos RabbitMQ se validaron manualmente.
 /// </summary>
 public sealed class OrderBusinessRulesTests
 {
