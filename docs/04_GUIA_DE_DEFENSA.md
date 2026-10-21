@@ -47,6 +47,8 @@ Esta guía describe **el código efectivamente incorporado en el repositorio**, 
 
 **¿Una reposición confirma automáticamente pedidos rechazados?** No. `Rejected` es terminal, igual que `Confirmed`. La reposición modifica exclusivamente las existencias disponibles; una reserva nueva —o un `Pending` todavía sin procesar— utiliza el stock que exista cuando Inventory ejecute la reserva. «Crear nuevo pedido» copia los datos de un rechazado a un formulario, pero nunca reabre ni envía automáticamente el anterior.
 
+**¿Por qué no puedo cambiar la cantidad de un rechazado al repetirlo?** El flujo de repetición está destinado a reintentar la misma solicitud, no a crear un pedido distinto encubierto. Se conserva exactamente cliente, SKU y cantidad original. Antes del POST se consulta el rechazo real por `GET /orders/{id}` y el stock actual; los cambios de cantidad se indican al instante y bloquean el envío. Para una cantidad distinta, se cancela la repetición y se utiliza el registro normal. El backend sigue aceptando pedidos válidos como `Pending` para mantener las reglas de Q10.
+
 **¿Cómo se actualiza el stock en vivo?** Inventory emite `inventoryChanged` por su propio canal SignalR después del COMMIT de cada ajuste o descuento; el navegador recupera `GET /inventory`. Si falla WebSocket, sigue consultando periódicamente. La actualización de los estados de pedidos conserva su canal independiente `ordersChanged` y sus mismas transiciones.
 
 ## Rutas exactas de la implementación y cómo modificarla
