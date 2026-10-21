@@ -16,7 +16,7 @@ Documento de diseño previo a implementación. Especifica responsabilidades veri
 
 **PostgreSQL:** un contenedor con dos bases independientes (`orderflow_orders`, `orderflow_inventory`), una propiedad de cada servicio. No se hacen joins entre bases ni se conceden accesos cruzados desde la lógica. Scripts de inicialización crean ambas bases sin pasos manuales. Migraciones y seed idempotentes al arranque, con manejo de dependencias y reintentos.
 
-**Catálogo de demostración:** fichero `seed/products.json` con al menos tres SKU. Orders utiliza una copia de referencia para validar SKU existente; Inventory inicializa el stock de los mismos SKU. Es un catálogo estático de prueba: no se expone una falsa sincronización dinámica. Documentar que en producción habría un dueño del catálogo y sincronización por eventos.
+**Catálogo y ampliación de productos:** `seed/products.json` establece los tres SKU iniciales de forma idempotente, sin sobrescribir saldos. Los nuevos SKU creados desde la consola se guardan en `catalog_products` de Orders y reciben existencias iniciales mediante `POST /inventory/products` en la base independiente de Inventory. `GET /products` combina la semilla y los registros nuevos; Orders valida que el SKU sea conocido antes de crear un pedido. El alta utiliza HTTP interno e idempotencia de aprovisionamiento, **no una transacción distribuida**. Las reservas de pedidos continúan exclusivamente mediante RabbitMQ; en producción se consideraría un catálogo propietario con eventos de sincronización, migraciones y controles de acceso.
 
 ## Flujo principal
 
