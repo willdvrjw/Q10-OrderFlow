@@ -14,6 +14,8 @@ builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseNpgsql(connectionString));
 builder.Services.AddScoped<OrderCreatedHandler>();
 builder.Services.AddScoped<InventoryManagementService>();
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IInventoryChangeNotifier, SignalRInventoryChangeNotifier>();
 
 // No se codifican credenciales; Compose suministra estas variables.
 // Si faltan, el servicio falla explícitamente antes de recibir mensajes.
@@ -44,5 +46,6 @@ app.MapGet("/health/ready", async (InventoryDbContext db, CancellationToken ct) 
         ? Results.Ok(new { status = "ready" })
         : Results.StatusCode(StatusCodes.Status503ServiceUnavailable));
 app.MapInventoryEndpoints();
+app.MapHub<InventoryUpdatesHub>("/hubs/inventory");
 
 await app.RunAsync();
