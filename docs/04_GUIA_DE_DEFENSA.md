@@ -32,7 +32,7 @@ Las respuestas siguientes son intenciones arquitectónicas que deben poder demos
 
 **¿Por qué Docker Compose?** Reproduce servicios, red, orden de inicio, persistencia y semillas sin instalaciones locales independientes.
 
-**¿Qué cambia en Kubernetes?** Se define Deployment, Service, ConfigMap, recursos y probes. Los secretos se inyectan externamente y las bases/broker requerirían desplegarse o gestionarse de modo separado.
+**¿Qué cambia en Kubernetes?** Incluimos Deployment (una réplica), Service interno, ConfigMap, startup/liveness/readiness y CPU/memoria. El Secret se gestiona fuera de Git y las bases/broker requieren servicios independientes. Se usa una réplica porque Outbox y SignalR aún no incorporan coordinación multinodo. Ver `docs/08_KUBERNETES.md`.
 
 **¿Qué harías diferente en producción?** Catálogo con servicio dueño, telemetría centralizada, secretos gestionados, almacenamiento/broker de alta disponibilidad, migraciones supervisadas, pruebas de caos y políticas de seguridad.
 
