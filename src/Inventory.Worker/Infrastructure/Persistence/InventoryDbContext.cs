@@ -4,7 +4,7 @@ namespace Inventory.Worker.Infrastructure.Persistence;
 
 /// <summary>
 /// Base de datos propia de Inventory. No comparte entidades ni transacciones
-/// con Orders API: la comunicación entre servicios ocurrirá por RabbitMQ.
+/// con Orders API: la comunicación entre servicios se realiza por RabbitMQ.
 /// </summary>
 public sealed class InventoryDbContext(DbContextOptions<InventoryDbContext> options) : DbContext(options)
 {
