@@ -26,6 +26,15 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [ ] Verificar de forma independiente arranque en otro host Docker y tiempo total hasta funcionamiento; aquí se comprobó un clon local al Codespace en el que las imágenes se compilaron en ~52 s, pero el arranque y la corrección de red exigieron tiempo adicional.
 - [x] README, matriz y guía de defensa contrastados con archivos reales; eliminadas rutas y afirmaciones de trabajo futuro obsoletas.
 
+## Ampliación solicitada de interfaz e inventario — pendiente de validación
+
+- [ ] Construir el Worker con ASP.NET Core y consultar `GET /inventory` a través de Nginx.
+- [ ] Ejecutar `POST /inventory/adjustments` para agregar unidades, establecer existencias y rechazar un saldo obsoleto con HTTP 409.
+- [ ] Verificar que modificar existencias no cambia los siete pedidos anteriores y que una reserva nueva sigue funcionando.
+- [ ] Ejecutar nuevamente las cinco pruebas backend: el test de concurrencia ahora añade aserciones para las operaciones administrativas.
+- [ ] Revisar la imagen de portada aportada por el candidato, el sombreado de contraste, degradados, figuras discretas, responsive y scroll interno del listado de pedidos.
+- [ ] Fusionar la rama de cambios en `main` solamente después de compilar y comprobar el flujo.
+
 ## Cinco pruebas backend implementadas y verificadas
 
 1. **Validación de entrada**: rechazo de nombre vacío, SKU desconocido y cantidad fuera del rango permitido mediante aserciones dentro del test de dominio.
