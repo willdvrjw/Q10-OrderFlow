@@ -229,6 +229,17 @@ El pedido de prueba fue `69e7df92-5e33-46ef-93de-2073c208fbd1`; se creó a las 0
 
 **Conclusión:** compilación, inicialización de datos, API, mensajería y reserva quedaron verificadas desde una copia nueva con red y volúmenes propios dentro de este Codespace. No se ha demostrado portabilidad a otro host Docker. El firewall de este Codespace necesitó una regla temporal de puente; no se debe presentar esa corrección como un requisito de instalación normal.
 
+## Verificación de cierre y repositorio público
+
+**Ejecución final observada:** 20/10/2026 (hora Colombia), correspondiente al 21/10/2026 UTC.
+
+- `docker compose --profile tests run --build --rm backend-tests`: compiló los cinco proyectos .NET 10 y ejecutó xUnit con **5 pruebas aprobadas, 0 fallidas y 0 omitidas**; tiempo de pruebas ~14,8 s, duración total de construcción ~30,5 s. Casos de dominio: validación, confirmación única y rechazo terminal; casos PostgreSQL: idempotencia por pedido y reserva concurrente sin stock negativo.
+- `docker compose exec -T web wget -qO- http://orders-api:8080/orders`: Nginx se comunicó con Orders API por la red Docker interna; la respuesta JSON incluyó **7 pedidos**, conservados de la instalación original.
+- `git status --short`: no devolvió cambios locales; árbol de trabajo limpio después de sincronizar la documentación y el código.
+- Consulta del repositorio mediante GitHub: `willdvrjw/Q10-OrderFlow`, rama `main`, **visibilidad `public`**. No se cambió la visibilidad de otros repositorios.
+
+**Cierre:** código, tests, README y guía de defensa se contrastaron con los archivos actuales. El proyecto es entregable como ejercicio técnico con evidencia de compilación y funcionamiento. Los límites restantes son validación en un host Docker independiente, inyección exacta de caída entre COMMIT y ACK, y despliegue Kubernetes real (no exigido por el bonus).
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
@@ -243,6 +254,6 @@ El pedido de prueba fue `69e7df92-5e33-46ef-93de-2073c208fbd1`; se creó a las 0
 - [x] Ensamblar manifiestos Kubernetes con Kustomize; ConfigMap, Service y Deployment obtenidos (validación contra un clúster no realizada).
 - [x] Ejecutar y comprobar funcionalmente una copia limpia con volúmenes independientes en el mismo Codespace (requiere ajuste temporal del firewall del host).
 - [ ] Comprobar despliegue en un host Docker diferente sin ajustes especiales; el comando literal `docker compose up` en primer plano no fue el utilizado en este ensayo (se usó `docker compose up -d --build`).
-- [ ] Revisar la consistencia final entre README, código y guía de defensa.
+- [x] Revisar la consistencia final entre README, código y guía de defensa; corregidos nombres y rutas obsoletas.
 
 Los elementos pendientes no deben presentarse como pruebas realizadas.
