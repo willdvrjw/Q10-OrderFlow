@@ -45,7 +45,9 @@ Esta guía describe **el código efectivamente incorporado en el repositorio**, 
 
 **¿Qué ocurre si alguien modifica inventario mientras preparo un ajuste?** El formulario envía `existenciaEsperada`. Inventory ejecuta un único `UPDATE ... WHERE disponible = existenciaEsperada` y, si cambió el stock, devuelve 409. Así un ajuste con datos antiguos no pisa reservas recientes.
 
-**¿La consola de inventario es segura para producción?** No. Es una herramienta de evaluación sin autenticación, autorización ni bitácora; el entorno debe permanecer de demostración. En producción se necesitarían credenciales, roles, registro de responsables y trazabilidad de cada cambio.
+**¿Una reposición confirma automáticamente pedidos rechazados?** No. `Rejected` es terminal, igual que `Confirmed`. La reposición modifica exclusivamente las existencias disponibles; una reserva nueva —o un `Pending` todavía sin procesar— utiliza el stock que exista cuando Inventory ejecute la reserva. «Crear nuevo pedido» copia los datos de un rechazado a un formulario, pero nunca reabre ni envía automáticamente el anterior.
+
+**¿Cómo se actualiza el stock en vivo?** Inventory emite `inventoryChanged` por su propio canal SignalR después del COMMIT de cada ajuste o descuento; el navegador recupera `GET /inventory`. Si falla WebSocket, sigue consultando periódicamente. La actualización de los estados de pedidos conserva su canal independiente `ordersChanged` y sus mismas transiciones.
 
 ## Rutas exactas de la implementación y cómo modificarla
 
@@ -63,6 +65,8 @@ Esta guía describe **el código efectivamente incorporado en el repositorio**, 
 | Cambiar publicación de pedidos | `src/Orders.Api/Infrastructure/Messaging/OrdersOutboxDispatcher.cs` | Detener broker, crear, recuperar |
 | Cambiar recepción y aplicación de resultados | `src/Orders.Api/Infrastructure/Messaging/StockResultConsumer.cs`, `src/Orders.Api/Application/Orders/StockResultHandler.cs` | Estado terminal e Inbox |
 | Cambiar modelo/tablas de pedidos | `src/Orders.Api/Infrastructure/Persistence/OrdersDbContext.cs` | Probar sobre base nueva; documentar esquema |
+| Cambiar la notificación en vivo de existencias | `src/Inventory.Worker/Infrastructure/Messaging/SignalRInventoryChangeNotifier.cs`, `web/src/components/InventoryManager.tsx` | SignalR `/hubs/inventory`, polling de respaldo |
+| Crear nueva solicitud desde un pedido rechazado | `web/src/components/OrdersList.tsx`, `web/src/components/OrderForm.tsx`, `web/src/App.tsx` | Precarga sin alterar pedido original |
 | Consultar o editar stock desde la UI | `web/src/components/InventoryManager.tsx`, `web/src/lib/api.ts` | GET /inventory, POST /inventory/adjustments |
 | Cambiar la validación del ajuste administrativo | `src/Inventory.Worker/Endpoints/InventoryEndpoints.cs` | HTTP 400, 404 y 409 |
 | Cambiar ingreso, reemplazo o bloqueo optimista de stock | `src/Inventory.Worker/Application/InventoryManagementService.cs` | Prueba PostgreSQL de conflicto tras reserva y ajustes |
