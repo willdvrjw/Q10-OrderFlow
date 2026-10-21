@@ -372,6 +372,18 @@ La rama de cambios permanece separada de `main` hasta que se completen las verif
 
 **Límite de la evidencia:** no se ejecutó en esta comprobación un `POST /products` directo para verificar el rechazo HTTP 409 de Orders API, ni se adjuntó una consulta de saldos antes y después. La garantía de unicidad en backend y en PostgreSQL está implementada, pero no se atribuye al ensayo visual un resultado HTTP que no fue observado.
 
+## Persistencia del producto nuevo y del estado histórico tras reiniciar — 21/10/2026
+
+El usuario ejecutó una comprobación reproducible en Codespaces: guardó las respuestas HTTP de `GET /products`, `GET /inventory` y `GET /orders` en archivos temporales, reinició **únicamente** `orders-api`, `inventory-worker` y `web` con `docker compose restart`, y solicitó las mismas rutas una vez que los servicios respondieron. Comparó byte a byte las tres respuestas mediante `cmp -s`:
+
+- `products: SIN CAMBIOS - CORRECTO`
+- `inventory: SIN CAMBIOS - CORRECTO`
+- `orders: SIN CAMBIOS - CORRECTO`
+
+El catálogo devuelto al finalizar incluye los SKU iniciales `TEST-03`, `XYZ-02`, `ABC-01` y el nuevo **`FRP` — Foto Retablos Personalizados**. `docker compose ps` mostró los cinco servicios activos, PostgreSQL saludable y Nginx publicando el puerto 8080. El ensayo no modificó ni borró volúmenes.
+
+**Conclusión:** la persistencia de catálogo, existencias y pedidos está verificada tras reiniciar la aplicación con los volúmenes existentes. Esta evidencia no corresponde a recrear los volúmenes desde cero ni a un despliegue en otro host. Todavía falta comprobar el código HTTP 409 en un intento directo de registrar de nuevo el SKU dinámico y verificar el scroll con un catálogo más extenso.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
