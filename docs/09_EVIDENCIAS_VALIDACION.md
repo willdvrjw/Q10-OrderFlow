@@ -352,6 +352,12 @@ La primera ejecución del perfil de siete pruebas pasó 3 de dominio, pero falla
 
 **Corrección incorporada en la rama, pendiente de comprobar en Codespaces:** el archivo `infra/nginx/default.conf` utiliza el resolver interno de Docker `127.0.0.11` con validez de 10 segundos y `proxy_pass` mediante nombres de upstream variables. Se conservan los cuatro proxies (Orders, Inventory y ambos Hubs), sus rutas, cabeceras y timeouts. La reconstrucción afecta exclusivamente a la imagen web; no cambia tablas ni pedidos. Falta verificar HTTP 200, el catálogo, las existencias y negociación de ambos hubs.
 
+## Verificación de la corrección Nginx: respuestas HTTP 200
+
+**21/10/2026, 07:33:49 UTC, Codespaces:** se actualizaron los archivos desde `feat/dynamic-products-and-console-quality` y se reconstruyó exclusivamente el servicio `web`. `nginx -t` devolvió `syntax is ok` y `test is successful`. Las llamadas del usuario a través de Nginx confirmaron `GET /health/ready → HTTP 200` con `{"status":"ready"}`, `GET /products → HTTP 200` con los tres productos de la semilla y `GET /inventory → HTTP 200` con `ABC-01=96`, `TEST-03=6` y `XYZ-02=20`. Los logs Nginx registraron las tres solicitudes `200`, sin `502`.
+
+**Conclusión limitada:** la resolución dinámica de upstreams solucionó el problema de acceso HTTP reproducido tras recrear contenedores. No se han vuelto a probar en esta comprobación las conexiones WebSocket SignalR ni el alta de un producto desde el panel; ambas permanecen pendientes. La rama no se ha integrado en `main`.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
