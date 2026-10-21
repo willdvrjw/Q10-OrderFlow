@@ -1,4 +1,4 @@
-import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { useCallback, useEffect, useState } from 'react';
 import { getOrders } from '../lib/api';
 import type { Order } from '../types';
@@ -31,6 +31,7 @@ export function useOrdersLive() {
 
   useEffect(() => {
     let disposed = false;
+    let connecting = false;
     void refresh();
 
     const connection = new HubConnectionBuilder()
@@ -39,23 +40,50 @@ export function useOrdersLive() {
       .configureLogging(LogLevel.Warning)
       .build();
 
-    connection.on('ordersChanged', () => void refresh(true));
-    connection.onreconnecting(() => setConnected(false));
-    connection.onreconnected(() => {
-      setConnected(true);
-      void refresh(true);
+    connection.on('ordersChanged', () => {
+      if (!disposed) void refresh(true);
     });
-    connection.onclose(() => setConnected(false));
+    connection.onreconnecting(() => {
+      if (!disposed) setConnected(false);
+    });
+    connection.onreconnected(() => {
+      if (!disposed) {
+        setConnected(true);
+        void refresh(true);
+      }
+    });
+    connection.onclose(() => {
+      if (!disposed) setConnected(false);
+    });
 
-    void connection.start()
-      .then(() => {
-        if (!disposed) setConnected(true);
-      })
-      .catch(() => {
+    // withAutomaticReconnect no reintenta fallos ocurridos durante el
+    // PRIMER connection.start(). El arranque de Compose puede abrir el
+    // frontend antes de que Orders API termine de inicializar PostgreSQL.
+    const start = async () => {
+      if (disposed || connecting ||
+          connection.state !== HubConnectionState.Disconnected) return;
+      connecting = true;
+      try {
+        await connection.start();
+        if (!disposed) {
+          setConnected(true);
+          void refresh(true);
+        }
+      } catch {
         if (!disposed) setConnected(false);
-      });
+      } finally {
+        connecting = false;
+      }
+    };
+    void start();
 
-    const interval = window.setInterval(() => void refresh(true), POLLING_MS);
+    // Polling independiente del socket, y reintento de la conexión inicial
+    // en cada ciclo si el backend estuvo temporalmente no disponible.
+    const interval = window.setInterval(() => {
+      if (disposed) return;
+      void refresh(true);
+      void start();
+    }, POLLING_MS);
     return () => {
       disposed = true;
       window.clearInterval(interval);
