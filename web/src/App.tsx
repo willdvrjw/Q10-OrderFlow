@@ -4,8 +4,8 @@ import type { RepeatOrderPrefill } from './components/OrderForm';
 import { OrdersList } from './components/OrdersList';
 import { InventoryManager } from './components/InventoryManager';
 import { useOrdersLive } from './hooks/useOrdersLive';
-import { getProducts } from './lib/api';
-import type { Order, Product } from './types';
+import { getInventory, getProducts } from './lib/api';
+import type { InventoryStock, Order, Product } from './types';
 
 interface MetricProps {
   label: string;
@@ -37,16 +37,60 @@ export default function App() {
   const formPanelRef = useRef<HTMLDivElement>(null);
   const [formPanelHeight, setFormPanelHeight] = useState<number>();
   const [repeatPrefill, setRepeatPrefill] = useState<RepeatOrderPrefill | null>(null);
+  const [inventoryStock, setInventoryStock] = useState<InventoryStock[]>([]);
+  const [inventoryReady, setInventoryReady] = useState(false);
+  const [repeatCheckingId, setRepeatCheckingId] = useState<string | null>(null);
+  const [repeatFeedback, setRepeatFeedback] = useState<string | null>(null);
 
-  const prepareNewOrder = useCallback((order: Order) => {
-    // No se reabre ni modifica el pedido rechazado. Solo se precarga otro.
-    setRepeatPrefill({
-      clienteNombre: order.clienteNombre,
-      sku: order.sku,
-      cantidad: order.cantidad,
-    });
-    formPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // La vista de inventario y los pedidos rechazados comparten los mismos
+  // datos recibidos por SignalR y GET /inventory (sin duplicar conexiones).
+  const updateInventory = useCallback((stock: InventoryStock[]) => {
+    setInventoryStock(stock);
+    setInventoryReady(true);
   }, []);
+  const markInventoryUnavailable = useCallback(() => {
+    setInventoryReady(false);
+  }, []);
+
+  const prepareNewOrder = useCallback(async (order: Order) => {
+    if (repeatCheckingId !== null || order.estado !== 'Rejected') return;
+    setRepeatCheckingId(order.id);
+    setRepeatFeedback(null);
+
+    try {
+      // No confiar en la última actualización visual: solicitar el saldo actual
+      // antes de habilitar la repetición de un pedido rechazado.
+      const latestStock = await getInventory();
+      updateInventory(latestStock);
+      const available = latestStock.find(item => item.sku === order.sku)?.disponible ?? 0;
+
+      if (available < order.cantidad) {
+        setRepeatFeedback(
+          'No se puede preparar un pedido nuevo de ' + order.sku +
+          ': hay ' + available + ' unidades y se necesitan ' + order.cantidad +
+          '. Actualiza las existencias antes de intentarlo.'
+        );
+        return;
+      }
+
+      // Rejected sigue terminal. Únicamente se precargan los datos del pedido
+      // nuevo; nunca se envía automáticamente ni se altera el pedido original.
+      setRepeatPrefill({
+        sourceOrderId: order.id,
+        clienteNombre: order.clienteNombre,
+        sku: order.sku,
+        cantidad: order.cantidad,
+      });
+      formPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch {
+      markInventoryUnavailable();
+      setRepeatFeedback(
+        'No fue posible comprobar las existencias. Intenta actualizar el inventario.'
+      );
+    } finally {
+      setRepeatCheckingId(null);
+    }
+  }, [repeatCheckingId, updateInventory, markInventoryUnavailable]);
 
   const loadCatalog = useCallback(async () => {
     try {
@@ -127,7 +171,10 @@ export default function App() {
               prefill={repeatPrefill}
               catalogError={catalogError}
               onReloadCatalog={() => void loadCatalog()}
-              onCreated={() => refresh(true)}
+              onCreated={async () => {
+                setRepeatPrefill(null);
+                await refresh(true);
+              }}
             />
           </div>
           <OrdersList
@@ -136,11 +183,19 @@ export default function App() {
             error={error}
             onRefresh={() => void refresh(false)}
             height={formPanelHeight}
+            stock={inventoryStock}
+            stockReady={inventoryReady}
+            checkingRepeatId={repeatCheckingId}
+            repeatFeedback={repeatFeedback}
             onRepeat={prepareNewOrder}
           />
         </div>
 
-        <InventoryManager products={products} />
+        <InventoryManager
+          products={products}
+          onStockUpdate={updateInventory}
+          onStockUnavailable={markInventoryUnavailable}
+        />
 
         <footer className="site-footer">
           <span>ORDERFLOW / SERVICIOS DISTRIBUIDOS</span>
