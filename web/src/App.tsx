@@ -169,6 +169,10 @@ export default function App() {
             <OrderForm
               products={products}
               prefill={repeatPrefill}
+              onCancelRepeat={() => {
+                setRepeatPrefill(null);
+                setRepeatFeedback(null);
+              }}
               catalogError={catalogError}
               onReloadCatalog={() => void loadCatalog()}
               onCreated={async () => {
