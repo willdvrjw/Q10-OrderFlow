@@ -1,4 +1,4 @@
-import type { CreateOrderRequest, FormErrors, InventoryAdjustmentRequest, InventoryAdjustmentResponse, InventoryStock, Order, Product } from '../types';
+import type { CreateOrderRequest, CreateProductRequest, FormErrors, InventoryAdjustmentRequest, InventoryAdjustmentResponse, InventoryStock, Order, Product } from '../types';
 
 interface ProblemDetails {
   mensaje?: string;
@@ -58,7 +58,14 @@ export function getOrder(id: string): Promise<Order> {
 }
 
 export function getProducts(): Promise<Product[]> {
-  return request<Product[]>('/products');
+  return request<Product[]>('/products', { cache: 'no-store' });
+}
+
+export function createProduct(body: CreateProductRequest): Promise<Product> {
+  return request<Product>('/products', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
 }
 
 export function createOrder(body: CreateOrderRequest): Promise<Order> {
