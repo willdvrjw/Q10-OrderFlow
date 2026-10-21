@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { ApiError, createOrder } from '../lib/api';
+import { ApiError, createOrder, getInventory } from '../lib/api';
 import type { FormErrors, Product } from '../types';
 
 export interface RepeatOrderPrefill {
+  sourceOrderId: string;
   clienteNombre: string;
   sku: string;
   cantidad: number;
@@ -39,7 +40,10 @@ export function OrderForm({ products, prefill, catalogError, onReloadCatalog, on
     setQuantity(String(prefill.cantidad));
     setErrors({});
     setMessageTone('info');
-    setMessage('Datos recuperados. Al guardar crearás un pedido nuevo; el pedido rechazado conservará su estado.');
+    setMessage(
+      'Solicitud basada en el rechazado ' + prefill.sourceOrderId.slice(0, 8).toUpperCase() +
+      '. El stock se comprobará otra vez al guardar. El pedido original no cambiará de estado.'
+    );
   }, [prefill]);
 
   const fieldError = (field: string) => errors[field]?.[0];
@@ -68,6 +72,31 @@ export function OrderForm({ products, prefill, catalogError, onReloadCatalog, on
 
     setBusy(true);
     try {
+      if (prefill !== null) {
+        // La disponibilidad vista en la tabla puede haber cambiado por otra
+        // reserva; no crear una repetición sin una comprobación actualizada.
+        let latest;
+        try {
+          latest = await getInventory();
+        } catch {
+          setMessageTone('error');
+          setMessage('No fue posible comprobar las existencias. No se creó ningún pedido.');
+          return;
+        }
+
+        const available = latest.find(item => item.sku === sku)?.disponible ?? 0;
+        if (available < amount) {
+          setErrors({ cantidad: [
+            'Solo hay ' + available + ' unidades disponibles y se solicitaron ' + amount + '.'
+          ] });
+          setMessageTone('error');
+          setMessage(
+            'No se creó un pedido nuevo. Repón las existencias y vuelve a verificar antes de guardar.'
+          );
+          return;
+        }
+      }
+
       const created = await createOrder({
         clienteNombre: cleanedName,
         sku,
