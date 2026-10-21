@@ -64,11 +64,12 @@ La página incorpora una sección **Inventario disponible**, con consulta del st
 - `GET /inventory`: consulta existencias actuales desde Inventory Worker (HTTP interno).
 - `POST /inventory/adjustments`: envía `sku`, `operacion` (`agregar` o `establecer`), `cantidad` y `existenciaEsperada`.
 - El ajuste se realiza mediante una sola sentencia SQL condicional: si las existencias cambiaron desde que el operador consultó, devuelve HTTP **409 Conflict** y no sobrescribe la reserva concurrente.
-- La operación de agregar requiere al menos una unidad; establecer permite cero. El navegador actualiza las existencias cada diez segundos. La imagen de portada se encuentra en `web/public/images/centro-logistico-orderflow.webp`.
+- La operación de agregar requiere al menos una unidad; establecer permite cero. Inventory emite `inventoryChanged` **después de confirmar cada reserva o ajuste**; el navegador consulta las existencias de inmediato y mantiene consultas cada diez segundos como respaldo. La imagen de portada se encuentra en `web/public/images/centro-logistico-orderflow.webp`.
+- Los indicadores de inventario **Disponible**, **Existencias bajas** (de 1 a 5) y **Agotado** son visuales; no introducen estados adicionales en los pedidos.
+- Los pedidos conservan exactamente `Pending`, `Confirmed` y `Rejected`. Reponer existencias beneficia a nuevas reservas y a pedidos `Pending` **que aún no han sido procesados**. Los pedidos ya `Rejected` permanecen rechazados; «Crear nuevo pedido» solo precarga el formulario y requiere una nueva confirmación para generar otro ID.
+- Se conserva el historial de pedidos y el descuento transaccional. La notificación de inventario no participa en la confirmación de la reserva.
 
-**Alcance de seguridad:** este panel administrativo es una ampliación **solo para demostración**, sin autenticación, autorización ni historial de ajustes. No debe exponerse en producción ni publicar el puerto 8080 de la demostración a usuarios no confiables. Un despliegue real exige autenticación administrativa, roles y auditoría de movimientos.
-
-**Estado de la ampliación:** código en rama de pruebas `feat/inventory-and-ui-refinement`, sujeto a compilación y validación antes de integrarlo en `main`. Los resultados ya verificados de la versión anterior se registran por separado.
+**Estado de la ampliación:** cambios en la rama `feat/inventory-and-ui-refinement`, pendientes de compilar y validar como conjunto antes de integrarlos en `main`.
 
 ## Cinco tests backend, un comando
 
