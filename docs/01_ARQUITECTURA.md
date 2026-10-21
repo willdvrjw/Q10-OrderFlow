@@ -88,7 +88,7 @@ Estética propuesta: fondo gris muy claro, superficies blancas, tipografía legi
 
 ## Alcance excluido
 
-Autenticación y autorización, CI/CD, pagos, conciliación financiera, catálogo editable, integración real con Shopify, Kubernetes ejecutándose y funcionalidades empresariales ajenas al ejercicio.
+CI/CD, pagos, conciliación financiera, catálogo editable, integración real con Shopify, Kubernetes ejecutándose y funcionalidades empresariales ajenas al ejercicio.
 
 ## Referencias oficiales verificadas
 
