@@ -1,6 +1,6 @@
 # 09. Evidencias de validación — Q10-OrderFlow
 
-Registro de resultados observados en GitHub Codespaces el 20 de octubre de 2026. Las verificaciones se mantienen separadas de las características solamente implementadas.
+Registro de resultados observados entre el 20 y el 21 de octubre de 2026, distinguiendo la hora local de Colombia y UTC. Las verificaciones se mantienen separadas de las características solamente implementadas.
 
 ## Compilación .NET 10
 
@@ -102,7 +102,7 @@ Se abrió el panel OrderFlow en el puerto 8080 de Codespaces. Las capturas muest
 
 Se pulsó "Crear pedido" con cliente vacío, producto sin seleccionar y cantidad 1. La interfaz dibujó bordes rojos y mensajes específicos bajo `clienteNombre` y `sku`. El campo de cantidad válida no recibió error. El contador total se mantuvo en cuatro.
 
-**Verificado:** validación visual de campos obligatorios y ausencia observable de un nuevo pedido en el panel. **Pendiente:** crear un pedido válido desde el formulario, observar refresco automático y ensayar respuesta a caída de SignalR.
+**Verificado:** validación visual de campos obligatorios y ausencia observable de un nuevo pedido en el panel. La creación de un pedido válido, el refresco automático y la caída controlada de SignalR se comprobaron posteriormente en los ensayos siguientes.
 
 ## Formulario: creación real y actualización automática
 
@@ -110,7 +110,7 @@ Se pulsó "Crear pedido" con cliente vacío, producto sin seleccionar y cantidad
 
 Desde el panel web se creó el pedido `ABC6E820` (prefijo visible), cliente `Prueba Formulario Q10`, SKU `XYZ-02`, cantidad 1. El formulario mostró la notificación verde de registro inicial `Pending`. Sin recargar manualmente el navegador, la tabla mostró el pedido en estado `Confirmado`, y los indicadores pasaron de 4 a 5 pedidos totales y de 3 a 4 confirmados, con 1 rechazado y 0 pendientes.
 
-**Alcance:** interfaz de creación y refresco sin recarga manual verificados. Aún no se ha atribuido causalmente el refresco a SignalR en vez del polling de respaldo. Falta revisar responsive y persistencia tras reinicio. El stock posterior de `XYZ-02` no se consultó en este paso.
+**Alcance:** interfaz de creación y refresco sin recarga manual verificados. Esta captura no aísla el mecanismo de actualización, pero ambos transportes se ensayaron por separado después. La vista responsive y la persistencia también se comprobaron en ensayos posteriores. El stock posterior de `XYZ-02` no se consultó en este paso.
 
 ## Verificación visual responsive (530 × 710)
 
@@ -119,7 +119,7 @@ Desde el panel web se creó el pedido `ABC6E820` (prefijo visible), cliente `Pru
 
 **Resolución aceptada por el responsable de la entrega:** se cierra la revisión visual con las capturas a 530 × 710. La comprobación adicional a 390 × 844 se omite por decisión expresa; no se presenta como una prueba realizada ni como incumplimiento demostrado. No se planifican más retoques visuales en esta fase.
 
-Los mensajes rojos de la consola apuntan a la página de autenticación de `github.dev/pf-signin` y a un canal de mensajes de navegador/extensión; con estas capturas no se demuestra que se originen en el código React. Sigue **pendiente** comprobar el viewport 390 × 844 y confirmar el resultado en él.
+Los mensajes rojos de la consola apuntan a la página de autenticación de `github.dev/pf-signin` y a un canal de mensajes de navegador/extensión; no se demuestra que se originen en React. La comprobación de 390 × 844 **no se realizó por decisión expresa del candidato**, después de aceptar la revisión a 530 × 710.
 
 ## Persistencia de datos tras reinicio — verificada
 
@@ -229,7 +229,7 @@ El pedido de prueba fue `69e7df92-5e33-46ef-93de-2073c208fbd1`; se creó a las 0
 - [x] Verificar errores `400` desde la API (3 casos comprobados).
 - [x] Verificar visualmente mensajes de error en el formulario (cliente y SKU obligatorios; captura del navegador).
 - [x] Comprobar creación y actualización de pedidos desde el formulario web (pedido ABC6E820 confirmado).
-- [ ] Verificar la versión responsive.
+- [x] Revisar responsive a 530 × 710 y aplicar mejoras CSS; comprobación adicional a 390 × 844 omitida expresamente.
 - [x] Establecer WebSocket y recibir `ordersChanged` por SignalR (HTTP 101 y frame `type:1`).
 - [x] Comprobar polling de respaldo con SignalR bloqueado: contadores 6→7 y confirmados 5→6, sin recargar.
 - [x] Ensamblar manifiestos Kubernetes con Kustomize; ConfigMap, Service y Deployment obtenidos (validación contra un clúster no realizada).
