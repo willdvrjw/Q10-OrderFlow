@@ -2,22 +2,24 @@
 
 No se marcará ningún elemento como verificado hasta haberlo ejecutado y guardado evidencia (salida de comandos, logs o prueba de UI). Esta lista está diseñada a partir de los criterios de aceptación del PDF.
 
-## QA adicional de entrega multiplataforma — ejecución final registrada
+**Decisión de cierre (21/10/2026):** la entrega oficial se realiza exclusivamente mediante repositorio GitHub y Docker Compose. Las pruebas en otro equipo, los enlaces externos de Codespaces y el alojamiento público no forman parte del procedimiento de entrega. Las casillas sin marcar identifican comprobaciones no ejecutadas; no se presentan como aprobadas ni se convierten por ello en condiciones adicionales para entregar.
+
+## QA de salida en Codespaces — ejecución final registrada
 
 - [x] `docker compose config --quiet` completó sin errores en la rama QA (21/10/2026).
 - [x] `docker compose up -d --build` compiló las tres imágenes sin errores en Codespaces (React/Vite `npm run build` completado). Tras dos reinicios transitorios de cada backend, **`curl http://127.0.0.1:8080/health/ready` devolvió HTTP 200 y `{status: ready}`** el 21/10/2026 a las 11:54:36 UTC. La primera revisión mostró HTTP 504 y después HTTP 502; esos fallos iniciales no se ocultan. No se eliminaron volúmenes.
 - [x] El healthcheck del contenedor **web** llegó a `healthy` y `/health/ready` respondió con `{"status":"ready"}` en la ejecución final de Codespaces (21/10/2026). Antes se observaron estados unhealthy y fallos HTTP 504/502 mientras los backend se recuperaban; quedan registrados como incidentes de arranque del host, no como ejecuciones sin problemas.
-- [x] Confirmado **HTTP 200** desde `127.0.0.1:8080/health/ready` en Codespaces con el nuevo bind `127.0.0.1:8080:80`. Queda pendiente verificar aparte apertura mediante URL externa de puertos reenviados de Codespaces y alternativa local 8090.
+- [x] Confirmado **HTTP 200** desde `127.0.0.1:8080/health/ready` en Codespaces con el nuevo bind `127.0.0.1:8080:80`. El puerto alternativo 8090 no se ensayó; los enlaces externos de Codespaces quedan descartados como canal de entrega.
 - [x] Repetidas las siete pruebas backend con `docker compose --profile tests run --build --rm backend-tests`: **7 aprobadas, 0 fallidas, 0 omitidas**; duración del test 13,2 s, compilación de la solución y dependencias exitosa. También `nginx -t` correcto y `git status --short` limpio.
 - [ ] Comprobar recuperación de la conexión SignalR al abrir el navegador ANTES de que Orders API esté listo; el código ahora reintenta el arranque inicial sin desactivar polling.
 - [x] Definido y aprobado el método de entrega: repositorio GitHub público y ejecución local con Docker Compose. Se descartan enlaces de Codespaces para evaluadores y alojamiento público como canales de demostración.
-- [ ] Probar en host Docker distinto de Codespaces y validar navegadores/SO por separado; no atribuir esos resultados a QA local.
-- [x] Integrada por **fast-forward** `audit/evaluator-onboarding-qa` en `main` tras verificar compilación de los tres componentes, cinco servicios activos, web `healthy`, Nginx correcto, HTTP `ready`, siete pruebas backend aprobadas y ausencia de cambios locales. GitHub aceptó el avance sin forzar ni reescribir historial; la comprobación multiplataforma externa sigue pendiente; el alojamiento público fue descartado por decisión del candidato.
+- [ ] Ejecución en un host Docker externo y validación independiente de navegadores/SO: no realizadas, fuera del cierre acordado. No atribuir esos resultados a la QA local.
+- [x] Integrada por **fast-forward** `audit/evaluator-onboarding-qa` en `main` tras verificar compilación de los tres componentes, cinco servicios activos, web `healthy`, Nginx correcto, HTTP `ready`, siete pruebas backend aprobadas y ausencia de cambios locales. GitHub aceptó el avance sin forzar ni reescribir historial; la comprobación multiplataforma externa no se realizó y quedó fuera del cierre acordado; el alojamiento público fue descartado por decisión del candidato.
 
 ## Checklist de aceptación obligatorio
 
 - [x] Una copia limpia en el mismo Codespace, arrancada con `docker compose up -d --build`, construyó frontend, Orders API, Inventory Worker, RabbitMQ y PostgreSQL; se validó seed y pedido Confirmed. Fue necesaria una regla temporal de firewall del host.
-- [ ] Verificar el comando literal `docker compose up` y portabilidad a otro host Docker sin ajustes especiales.
+- [ ] El comando literal `docker compose up` en primer plano y la portabilidad a otro host no se ensayaron por separado. Sí se verificó el arranque con `docker compose up -d --build` en Codespaces; no se presenta compatibilidad multiplataforma como certificada.
 - [x] `GET /orders` respondió por el puerto publicado (HTTP 200) y desde el contenedor web mediante la red interna Docker; 7 pedidos originales conservados.
 - [x] `POST /orders` responde 201 y devuelve `Pending` (comprobado vía REST).
 - [x] Pedido con suficiente stock termina en `Confirmed` (comprobado vía REST).
@@ -35,7 +37,7 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [x] Los datos seed se crean automáticamente y reiniciar no restablece el stock consumido (cinco pedidos idénticos antes y después; diff de inventario vacío).
 - [x] Las cinco pruebas backend se ejecutan con un solo comando documentado (20/10/2026, cinco aprobadas).
 - [x] Kubernetes incluye Deployment, Service, ConfigMap, probes y requests/limits; `kubectl kustomize k8s` generó los tres recursos sin errores. No se ha validado contra un clúster.
-- [ ] Verificar de forma independiente arranque en otro host Docker y tiempo total hasta funcionamiento; aquí se comprobó un clon local al Codespace en el que las imágenes se compilaron en ~52 s, pero el arranque y la corrección de red exigieron tiempo adicional.
+- [ ] Ensayo en host Docker externo y medición del tiempo total de arranque: no realizados, excluidos del cierre. En el clon del mismo Codespace las imágenes se compilaron en ~52 s, pero el arranque y la recuperación de conectividad requirieron tiempo adicional.
 - [x] README, matriz y guía de defensa contrastados con archivos reales; eliminadas rutas y afirmaciones de trabajo futuro obsoletas.
 
 ## Ampliación solicitada de interfaz e inventario — pendiente de validación
