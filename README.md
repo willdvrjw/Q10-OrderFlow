@@ -2,11 +2,11 @@
 
 Evaluación Fullstack: registro de pedidos, reserva asíncrona de inventario y panel de operaciones.
 
-**Estado del proyecto:** versión de pedidos e inventario validada en Codespaces. La ampliación de alta dinámica de productos se desarrolla en `feat/dynamic-products-and-console-quality` y debe compilarse y validarse antes de integrarse en `main`.
+**Estado del proyecto:** solución de pedidos, inventario y alta dinámica de productos compilada y validada en GitHub Codespaces. Siete pruebas backend aprobadas y funcionamiento del alta/pedido/stock comprobado por el candidato. La ampliación se prepara para integrar en `main`.
 
 - **Backend:** Orders API e Inventory Worker en .NET 10, RabbitMQ y PostgreSQL; pedidos `Pending`, `Confirmed` y `Rejected`.
 - **Robustez:** Outbox transaccional, reintentos, idempotencia por pedido y descuento atómico; recuperación verificada ante detenciones de RabbitMQ y Worker.
-- **Pruebas:** cinco pruebas backend originales aprobadas; se añadieron dos pruebas PostgreSQL de alta dinámica, pendientes de ejecución tras esta ampliación.
+- **Pruebas:** **siete pruebas backend aprobadas**: tres de dominio, dos de inventario y concurrencia sobre PostgreSQL y dos de creación dinámica/idempotencia de productos sobre PostgreSQL.
 - **Frontend:** React + TypeScript con validación, filtrado, SignalR y recuperación por polling. Dependencias fijadas en `web/package-lock.json` e instaladas con `npm ci`.
 - **Despliegue:** compilación, seed y creación/reserva comprobados en un clon independiente dentro del mismo Codespace; bonus Kubernetes ensamblado sintácticamente, no desplegado en un clúster.
 
@@ -79,7 +79,7 @@ curl -fsS http://localhost:8080/products
 curl -fsS http://localhost:8080/inventory
 ~~~
 
-**Estado de validación de esta ampliación:** código y dos nuevas pruebas PostgreSQL incorporadas en rama de desarrollo; pendiente compilación de los dos servicios, TypeScript, pruebas automáticas y verificación manual de alta→pedido→reserva→persistencia.
+**Validación de esta ampliación:** Orders API, Inventory Worker y React/TypeScript compilaron con Docker; **7/7 pruebas backend aprobadas**. El usuario verificó alta de producto, aparición en pedidos e inventario, ajuste y reserva, bloqueo de SKU duplicados y diseño de escritorio/móvil. Se comprobó adicionalmente **HTTP 409** al duplicar `FRP`, comparando catálogo, inventario e historial antes/después sin cambios, y se verificó persistencia idéntica de los tres recursos tras reiniciar los servicios. Nginx pasó a resolver dinámicamente upstreams con Docker DNS y devolvió HTTP 200 en las rutas verificadas. Queda sin comprobación independiente la incidencia asíncrona de extensiones de Chrome, SignalR posterior al cambio de proxy, una prueba de estrés con muchos SKU y el despliegue en otro host Docker.
 
 ## Gestión de existencias (ampliación de la prueba)
 
@@ -96,7 +96,7 @@ La página incorpora una sección **Inventario disponible**, con consulta del st
 - Se conserva el historial de pedidos y el descuento transaccional. La notificación de inventario no participa en la confirmación de la reserva.
 - **Límite de concurrencia:** la consulta preventiva no bloquea unidades. Si otra reserva utiliza el stock entre la última comprobación y el procesamiento del pedido, Inventory puede devolver `StockRejected` legítimamente; prohibir esto requeriría modificar la reserva asíncrona exigida por la prueba. Esta protección de interfaz **solo afecta la repetición de rechazados**; `POST /orders` y el formulario manual conservan la semántica original de aceptar pedidos válidos en `Pending`, aunque después se rechacen por insuficiencia.
 
-**Validación de la ampliación:** ejecutada en GitHub Codespaces con **5 pruebas backend aprobadas**, frontend compilado mediante Docker, API preparada, inventario consultable y 10 pedidos preservados. La recepción de `inventoryChanged` fue observada por el usuario en Chrome. La UI de repetición de rechazados se corrigió después de las pruebas manuales y sus restricciones de cantidad fueron comprobadas visualmente; queda sin ensayo completo una repetición exacta de extremo a extremo, así como el bloqueo de SignalR del inventario para probar su polling específico. Véase `docs/09_EVIDENCIAS_VALIDACION.md`.
+**Validación anterior de la interfaz e inventario:** cinco pruebas aprobadas en la etapa inicial (ahora ampliadas a siete); la recepción de `inventoryChanged` se observó con Chrome antes del ajuste de DNS dinámico de Nginx. Los pedidos `Rejected` siguen siendo terminales y las reglas originales se conservan. Permanecen sin ensayo específico el polling de inventario con WebSocket bloqueado y una repetición exacta de rechazado de extremo a extremo. Véase `docs/09_EVIDENCIAS_VALIDACION.md`.
 
 ## Cinco tests backend, un comando
 
@@ -168,4 +168,4 @@ Reemplazar inicialización de esquemas por migraciones; introducir privilegios m
 - docs/08_KUBERNETES.md: alcance, decisiones y límites del bonus.
 - docs/09_EVIDENCIAS_VALIDACION.md: registro de resultados reales.
 
-**Alcance de validación:** el sistema se ejecutó desde una copia nueva dentro de GitHub Codespaces, con volúmenes independientes. El firewall específico de ese entorno requirió un ajuste local de conectividad entre contenedores. No se ha probado todavía en un host Docker diferente. La emulación responsive se verificó a 530 × 710; no se ensayó 390 × 844. Kubernetes se verificó mediante Kustomize, sin clúster. Ver `docs/09_EVIDENCIAS_VALIDACION.md`.
+**Alcance de validación:** el sistema se ejecutó desde una copia nueva dentro de GitHub Codespaces, con volúmenes independientes. El firewall específico de ese entorno requirió un ajuste local de conectividad entre contenedores. No se ha probado todavía en un host Docker diferente. La emulación responsive original se verificó a 530 × 710. Para la ampliación del inventario el usuario confirmó visualmente la vista móvil a 390 px sin aportar nueva captura; no equivale a un ensayo independiente de estrés con muchos SKU. Kubernetes se verificó mediante Kustomize, sin clúster. Ver `docs/09_EVIDENCIAS_VALIDACION.md`.
