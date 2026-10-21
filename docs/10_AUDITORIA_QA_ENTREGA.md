@@ -51,16 +51,16 @@ El servicio se publica en loopback; las rutas de administración no incluyen aut
 
 `docker compose --profile tests run --build --rm backend-tests` ejecutó la suite completa con **7 tests aprobados, 0 fallidos y 0 omitidos**. La salida confirmó compilación de los cinco proyectos .NET, `nginx -t` satisfactorio y repositorio local sin cambios pendientes.
 
-**Limitación explícita:** antes de recuperarse, los dos servicios backend sufrieron reinicios transitorios y Nginx devolvió inicialmente 504/502. La ejecución final demostró funcionamiento y recuperación, pero no certifica arranque sin incidencias en todos los equipos ni rendimiento determinado. Tampoco valida todavía un dominio público estable que aloje la interfaz.
+**Limitación explícita:** antes de recuperarse, los dos servicios backend sufrieron reinicios transitorios y Nginx devolvió inicialmente 504/502. La ejecución final demostró funcionamiento y recuperación, pero no certifica arranque sin incidencias en todos los equipos ni rendimiento determinado. No se contempla un dominio público alojado como parte de la entrega.
 
-## Pendientes que no deben presentarse como aprobados
+## Límites de verificación y pruebas fuera del alcance de la entrega
 
 - Arranque limpio de Windows/macOS/Linux fuera de Codespaces y tiempo real de inicio; revisión de Chrome/Edge/Firefox/Safari en diferentes SO.
-- Prueba del puerto alternativo, del nuevo enlace de Codespaces desde otra cuenta y del arranque en un host Docker externo. En Codespaces, el healthcheck local sí llegó a `healthy` después de resolver los problemas transitorios.
+- Puerto alternativo y arranque en host Docker externo: no ensayados. Los enlaces externos de Codespaces quedan descartados como vía de entrega. En Codespaces, el healthcheck local sí llegó a `healthy` después de resolver los problemas transitorios.
 - Inyección de caída entre COMMIT y ACK, negociación de WebSocket tras el último ajuste de Nginx y polling de inventario con SignalR bloqueado.
 - Investigación de la advertencia de canal asíncrono de Chrome en un navegador sin extensiones.
-- Prueba con centenares de SKU, entorno público hospedado y despliegue Kubernetes real.
+- Prueba con centenares de SKU y despliegue Kubernetes real no realizados; entorno público hospedado excluido por decisión de entrega.
 
-La QA de código y el README no sustituyen las ejecuciones externas. El informe separa las pruebas observadas de los controles pendientes y conserva los contratos del dominio.
+La entrega se cierra con la QA efectivamente realizada en Codespaces y las limitaciones anteriores expresamente documentadas. Las ejecuciones externas no se realizaron ni son condición de cierre; este informe no las presenta como aprobadas.
 
 Para evidencias con fechas y comandos, consultar [09_EVIDENCIAS_VALIDACION.md](09_EVIDENCIAS_VALIDACION.md). Para controles pendientes, consultar [03_PLAN_DE_VALIDACION.md](03_PLAN_DE_VALIDACION.md).
