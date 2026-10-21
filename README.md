@@ -72,7 +72,7 @@ La página incorpora una sección **Inventario disponible**, con consulta del st
 - Se conserva el historial de pedidos y el descuento transaccional. La notificación de inventario no participa en la confirmación de la reserva.
 - **Límite de concurrencia:** la consulta preventiva no bloquea unidades. Si otra reserva utiliza el stock entre la última comprobación y el procesamiento del pedido, Inventory puede devolver `StockRejected` legítimamente; prohibir esto requeriría modificar la reserva asíncrona exigida por la prueba. Esta protección de interfaz **solo afecta la repetición de rechazados**; `POST /orders` y el formulario manual conservan la semántica original de aceptar pedidos válidos en `Pending`, aunque después se rechacen por insuficiencia.
 
-**Estado de la ampliación:** cambios en la rama `feat/inventory-and-ui-refinement`, pendientes de compilar y validar como conjunto antes de integrarlos en `main`.
+**Validación de la ampliación:** ejecutada en GitHub Codespaces con **5 pruebas backend aprobadas**, frontend compilado mediante Docker, API preparada, inventario consultable y 10 pedidos preservados. La recepción de `inventoryChanged` fue observada por el usuario en Chrome. La UI de repetición de rechazados se corrigió después de las pruebas manuales y sus restricciones de cantidad fueron comprobadas visualmente; queda sin ensayo completo una repetición exacta de extremo a extremo, así como el bloqueo de SignalR del inventario para probar su polling específico. Véase `docs/09_EVIDENCIAS_VALIDACION.md`.
 
 ## Cinco tests backend, un comando
 
