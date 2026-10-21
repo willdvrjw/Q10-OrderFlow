@@ -2,11 +2,11 @@
 
 Evaluación Fullstack: registro de pedidos, reserva asíncrona de inventario y panel de operaciones.
 
-**Estado del proyecto:** versión funcional comprobada en GitHub Codespaces mediante Docker Compose.
+**Estado del proyecto:** versión de pedidos e inventario validada en Codespaces. La ampliación de alta dinámica de productos se desarrolla en `feat/dynamic-products-and-console-quality` y debe compilarse y validarse antes de integrarse en `main`.
 
 - **Backend:** Orders API e Inventory Worker en .NET 10, RabbitMQ y PostgreSQL; pedidos `Pending`, `Confirmed` y `Rejected`.
 - **Robustez:** Outbox transaccional, reintentos, idempotencia por pedido y descuento atómico; recuperación verificada ante detenciones de RabbitMQ y Worker.
-- **Pruebas:** cinco pruebas backend aprobadas, incluidas dos de integración con PostgreSQL real.
+- **Pruebas:** cinco pruebas backend originales aprobadas; se añadieron dos pruebas PostgreSQL de alta dinámica, pendientes de ejecución tras esta ampliación.
 - **Frontend:** React + TypeScript con validación, filtrado, SignalR y recuperación por polling. Dependencias fijadas en `web/package-lock.json` e instaladas con `npm ci`.
 - **Despliegue:** compilación, seed y creación/reserva comprobados en un clon independiente dentro del mismo Codespace; bonus Kubernetes ensamblado sintácticamente, no desplegado en un clúster.
 
@@ -56,6 +56,30 @@ curl -i -X POST http://localhost:8080/orders \
 ~~~
 
 El POST devuelve HTTP 201 con estado Pending, aunque la reserva aún no terminó. Inventory Worker determina Confirmed o Rejected por evento. Nombre vacío, SKU inexistente o cantidad fuera de 1 a 100 producen HTTP 400 con errores visibles para el frontend.
+
+## Alta de productos nuevos (ampliación adicional)
+
+En **Inventario disponible** se incorpora el botón **Agregar producto nuevo**, bajo las tarjetas de existencias. Solicita **nombre**, **SKU único** y **existencias iniciales** (admite 0). Después de guardar, el producto aparece tanto en las tarjetas y el actualizador de inventario como en el selector **Nuevo pedido**, sin editar la semilla ni reiniciar el sistema.
+
+- `POST /products` en Orders API registra `{"sku":"NUEVO-04","nombre":"Producto de ejemplo","disponible":8}`. Valida nombre (1–160), SKU normalizado en mayúsculas (1–64 letras, números, `.`, `-`, `_`) y existencias (0–1.000.000). Responde **201** solo cuando se ha preparado el SKU en Inventory y guardado su catálogo persistente en Orders; **400** si faltan datos, **409** si el SKU está repetido y **503** si Inventory no está disponible.
+- `GET /products` une los tres productos iniciales con los productos creados y persistidos en Orders. `GET /products/{sku}` consulta un producto. El formulario de pedidos usa la misma validación Q10 con este catálogo ampliado.
+- Orders coordina el alta mediante HTTP interno hacia `POST /inventory/products`. Inventory **crea registro idempotente y stock inicial en una transacción local**, sin leer ni modificar la base de Orders. Un reintento idéntico no restablece existencias ni crea duplicados; un SKU ya existente con otros datos produce **409**. Los pedidos continúan procesándose **asíncronamente por RabbitMQ**, sin cambiar sus estados ni reservas.
+- Cada servicio incorpora su propia tabla nueva mediante DDL `CREATE TABLE IF NOT EXISTS` después de `EnsureCreated`, también con volúmenes previamente inicializados; **no borra ni reinicia los pedidos/stock existentes**. Si Inventory confirmó y Orders no alcanzó a guardar, se puede **reintentar la misma solicitud** para completar el alta sin sobrescribir stock. No hay transacción distribuida entre servicios: es un compromiso explícito de esta extensión.
+- La lista de tarjetas tiene **scroll independiente**, se mantiene a la altura del formulario **Actualizar existencias**, y el botón de alta permanece accesible bajo las tarjetas. En otro navegador, una notificación `inventoryChanged` desencadena actualización de existencias y sincronización del catálogo; el polling sigue disponible.
+- La entrada de búsqueda de pedidos y los campos del inventario ahora tienen `id` y `name` explícitos para evitar la incidencia de autocompletado señalada por Chrome DevTools. Los errores sobre `chrome.runtime` o canales de mensajes de extensiones se deben investigar en el navegador: no proceden necesariamente de la aplicación.
+- **Seguridad de demostración:** igual que el ajuste de inventario original, las rutas administrativas no incorporan autenticación. Antes de uso público real se requieren roles, permisos y auditoría; esta versión está pensada para la prueba técnica.
+
+Ejemplo sin cambiar datos existentes:
+
+~~~bash
+curl -i -X POST http://localhost:8080/products \
+  -H "Content-Type: application/json" \
+  -d '{"sku":"DEMO-04","nombre":"Producto demostración","disponible":8}'
+curl -fsS http://localhost:8080/products
+curl -fsS http://localhost:8080/inventory
+~~~
+
+**Estado de validación de esta ampliación:** código y dos nuevas pruebas PostgreSQL incorporadas en rama de desarrollo; pendiente compilación de los dos servicios, TypeScript, pruebas automáticas y verificación manual de alta→pedido→reserva→persistencia.
 
 ## Gestión de existencias (ampliación de la prueba)
 
