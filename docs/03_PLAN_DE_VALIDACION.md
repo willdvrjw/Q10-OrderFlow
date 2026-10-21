@@ -2,17 +2,17 @@
 
 No se marcará ningún elemento como verificado hasta haberlo ejecutado y guardado evidencia (salida de comandos, logs o prueba de UI). Esta lista está diseñada a partir de los criterios de aceptación del PDF.
 
-## QA adicional de entrega multiplataforma — pendiente de la última ejecución
+## QA adicional de entrega multiplataforma — ejecución final registrada
 
 - [x] `docker compose config --quiet` completó sin errores en la rama QA (21/10/2026).
 - [x] `docker compose up -d --build` compiló las tres imágenes sin errores en Codespaces (React/Vite `npm run build` completado). Tras dos reinicios transitorios de cada backend, **`curl http://127.0.0.1:8080/health/ready` devolvió HTTP 200 y `{status: ready}`** el 21/10/2026 a las 11:54:36 UTC. La primera revisión mostró HTTP 504 y después HTTP 502; esos fallos iniciales no se ocultan. No se eliminaron volúmenes.
-- [ ] El healthcheck de web mostró `unhealthy` durante el problema de arranque y debe comprobarse de nuevo ahora que `/health/ready` responde HTTP 200. Los logs posteriores confirman puertos LISTEN para Orders (`8080`) e Inventory (`8081`), inicialización completada y operaciones SQL exitosas; los primeros fallos fueron excepciones transitorias de conectividad a PostgreSQL. Dos reinicios automáticos registrados en cada backend; no se dispone aquí de la traza completa de las primeras excepciones.
+- [x] El healthcheck del contenedor **web** llegó a `healthy` y `/health/ready` respondió con `{"status":"ready"}` en la ejecución final de Codespaces (21/10/2026). Antes se observaron estados unhealthy y fallos HTTP 504/502 mientras los backend se recuperaban; quedan registrados como incidentes de arranque del host, no como ejecuciones sin problemas.
 - [x] Confirmado **HTTP 200** desde `127.0.0.1:8080/health/ready` en Codespaces con el nuevo bind `127.0.0.1:8080:80`. Queda pendiente verificar aparte apertura mediante URL externa de puertos reenviados de Codespaces y alternativa local 8090.
-- [ ] Repetir las siete pruebas backend con el perfil tests después de los cambios finales de Compose y del hook SignalR de Orders.
+- [x] Repetidas las siete pruebas backend con `docker compose --profile tests run --build --rm backend-tests`: **7 aprobadas, 0 fallidas, 0 omitidas**; duración del test 13,2 s, compilación de la solución y dependencias exitosa. También `nginx -t` correcto y `git status --short` limpio.
 - [ ] Comprobar recuperación de la conexión SignalR al abrir el navegador ANTES de que Orders API esté listo; el código ahora reintenta el arranque inicial sin desactivar polling.
 - [ ] Comprobar apertura del enlace Codespaces desde una cuenta GitHub de evaluador diferente; autenticación/cuota pueden impedirlo y no se promete acceso universal sin cuenta.
 - [ ] Probar en host Docker distinto de Codespaces y validar navegadores/SO por separado; no atribuir esos resultados a QA local.
-- [ ] Tras validar los cambios anteriores, integrar por avance rápido la rama audit/evaluator-onboarding-qa en main, conservando los registros existentes.
+- [ ] Integrar por avance rápido `audit/evaluator-onboarding-qa` en `main` una vez revisado el resultado de las pruebas (7/7), salud `healthy`, compilación de los tres componentes y ausencia de cambios locales; verificar referencia de GitHub tras integración.
 
 ## Checklist de aceptación obligatorio
 
