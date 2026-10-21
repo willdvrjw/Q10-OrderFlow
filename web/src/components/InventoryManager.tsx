@@ -225,7 +225,13 @@ export function InventoryManager({ products, onStockUpdate, onStockUnavailable, 
         </FlashNotice>
       )}
       <div className="inventory-layout">
-        <div className="stock-list" aria-label="Existencias por producto">
+        <div className="stock-column" style={{ height: editorHeight ? editorHeight + 'px' : undefined }}>
+          <div ref={stockScrollRef} className="stock-scroll-area" role="region"
+            aria-label="Catálogo de productos, desplazamiento independiente" tabIndex={0}>
+            {showCreate && (
+              <NewProductForm products={products} onCreated={handleProductCreated} />
+            )}
+            <div className="stock-list" aria-label="Existencias por producto">
           {loading ? (
             <div className="inventory-loading">Consultando inventario...</div>
           ) : stock.length === 0 ? (
@@ -252,15 +258,35 @@ export function InventoryManager({ products, onStockUpdate, onStockUnavailable, 
               </button>
             );
           })}
-          <p className="stock-note">Las alertas de existencias bajas son informativas (5 unidades o menos). No modifican la reserva de pedidos.</p>
+            </div>
+          </div>
+          <div className="stock-column-actions">
+            <button
+              type="button"
+              className="stock-add-button"
+              aria-expanded={showCreate}
+              onClick={() => {
+                setShowCreate(value => !value);
+                stockScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
+              <span aria-hidden="true">{showCreate ? '×' : '+'}</span>
+              {showCreate ? 'Cancelar alta de producto' : 'Agregar producto nuevo'}
+            </button>
+            <p className="stock-note">
+              Las alertas de existencias bajas son informativas (5 unidades o menos).
+              No modifican la reserva de pedidos.
+            </p>
+          </div>
         </div>
 
-        <form className="inventory-editor" onSubmit={event => void submit(event)} noValidate>
+        <form ref={editorRef} className="inventory-editor" onSubmit={event => void submit(event)} noValidate>
           <h3>Actualizar existencias</h3>
           <p>Selecciona un producto y registra un ingreso o define su cantidad total.</p>
           <label htmlFor="inventory-product">Producto</label>
           <select
             id="inventory-product"
+            name="sku"
             value={selectedSku}
             onChange={event => { setSelectedSku(event.target.value); setFeedback(null); }}
             disabled={saving || stock.length === 0}
@@ -272,6 +298,7 @@ export function InventoryManager({ products, onStockUpdate, onStockUnavailable, 
           <label htmlFor="inventory-action">Tipo de ajuste</label>
           <select
             id="inventory-action"
+            name="operacion"
             value={operation}
             onChange={event => { setOperation(event.target.value as InventoryOperation); setFeedback(null); }}
             disabled={saving}
@@ -284,6 +311,7 @@ export function InventoryManager({ products, onStockUpdate, onStockUnavailable, 
           </label>
           <input
             id="inventory-amount"
+            name="cantidad"
             type="number"
             min={operation === 'agregar' ? '1' : '0'}
             max="1000000"
