@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { OrderForm } from './components/OrderForm';
+import type { RepeatOrderPrefill } from './components/OrderForm';
 import { OrdersList } from './components/OrdersList';
 import { InventoryManager } from './components/InventoryManager';
 import { useOrdersLive } from './hooks/useOrdersLive';
 import { getProducts } from './lib/api';
-import type { Product } from './types';
+import type { Order, Product } from './types';
 
 interface MetricProps {
   label: string;
@@ -35,6 +36,17 @@ export default function App() {
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const formPanelRef = useRef<HTMLDivElement>(null);
   const [formPanelHeight, setFormPanelHeight] = useState<number>();
+  const [repeatPrefill, setRepeatPrefill] = useState<RepeatOrderPrefill | null>(null);
+
+  const prepareNewOrder = useCallback((order: Order) => {
+    // No se reabre ni modifica el pedido rechazado. Solo se precarga otro.
+    setRepeatPrefill({
+      clienteNombre: order.clienteNombre,
+      sku: order.sku,
+      cantidad: order.cantidad,
+    });
+    formPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   const loadCatalog = useCallback(async () => {
     try {
@@ -112,6 +124,7 @@ export default function App() {
           <div ref={formPanelRef} className="form-panel-measure">
             <OrderForm
               products={products}
+              prefill={repeatPrefill}
               catalogError={catalogError}
               onReloadCatalog={() => void loadCatalog()}
               onCreated={() => refresh(true)}
@@ -123,6 +136,7 @@ export default function App() {
             error={error}
             onRefresh={() => void refresh(false)}
             height={formPanelHeight}
+            onRepeat={prepareNewOrder}
           />
         </div>
 
