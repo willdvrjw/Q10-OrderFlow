@@ -181,6 +181,18 @@ Finalizado el ensayo de polling, se desactivó en DevTools la casilla **Habilita
 
 La funcionalidad WebSocket quedó restaurada y el sistema regresó al estado de operación normal. No se han reinicializado ni eliminado los volúmenes de bases de datos durante esta comprobación.
 
+## Auditoría desde una copia Git limpia — construcción y arranque
+
+**Entorno:** el mismo GitHub Codespace, en el directorio temporal `/tmp/q10-orderflow-clean-audit`, separado de la carpeta original.
+
+1. Se creó la copia con `git clone --branch main --single-branch . /tmp/q10-orderflow-clean-audit`; `docker compose config --quiet` no devolvió errores.
+2. Tras detener los servicios originales sin eliminar sus volúmenes, se ejecutó `docker compose up -d --build` desde la copia.
+3. Docker construyó con éxito las imágenes nuevas de Orders API, Inventory Worker y frontend (52,2 s de construcción reportada).
+4. Se crearon la red `q10-orderflow-clean-audit_default` y volúmenes nuevos para PostgreSQL y RabbitMQ, independientes del proyecto original.
+5. `docker compose ps` mostró los cinco servicios `Up`; PostgreSQL y RabbitMQ aparecieron `healthy`; el frontend publicó el puerto `8080`.
+
+**Estado:** compilación y arranque de contenedores desde un clon nuevo aprobados dentro del mismo Codespace. **Pendiente:** HTTP `/health/ready`, seed, `GET /orders` inicial y creación/reserva real de pedidos desde esta copia. El ensayo no demuestra todavía portabilidad en otro host ni elimina la particularidad de `iptables-legacy` observada anteriormente en este Codespace.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
