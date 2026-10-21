@@ -9,6 +9,7 @@ namespace Inventory.Worker.Infrastructure.Persistence;
 public sealed class InventoryDbContext(DbContextOptions<InventoryDbContext> options) : DbContext(options)
 {
     public DbSet<StockItem> Stock => Set<StockItem>();
+    public DbSet<InventoryProductRegistration> ProductRegistrations => Set<InventoryProductRegistration>();
     public DbSet<ProcessedOrder> ProcessedOrders => Set<ProcessedOrder>();
     public DbSet<InventoryOutboxMessage> OutboxMessages => Set<InventoryOutboxMessage>();
 
@@ -21,6 +22,15 @@ public sealed class InventoryDbContext(DbContextOptions<InventoryDbContext> opti
             entity.Property(x => x.Sku).HasColumnName("sku").HasMaxLength(64);
             entity.Property(x => x.Disponible).HasColumnName("disponible");
             entity.ToTable(t => t.HasCheckConstraint("ck_stock_nonnegative", "disponible >= 0"));
+        });
+
+        modelBuilder.Entity<InventoryProductRegistration>(entity =>
+        {
+            entity.ToTable("inventory_product_registrations");
+            entity.HasKey(x => x.Sku);
+            entity.Property(x => x.Sku).HasColumnName("sku").HasMaxLength(64);
+            entity.Property(x => x.Nombre).HasColumnName("nombre").HasMaxLength(160).IsRequired();
+            entity.Property(x => x.StockInicial).HasColumnName("stock_inicial").IsRequired();
         });
 
         modelBuilder.Entity<ProcessedOrder>(entity =>
@@ -62,6 +72,18 @@ public sealed class StockItem
 
         return new StockItem { Sku = sku.Trim().ToUpperInvariant(), Disponible = disponible };
     }
+}
+
+/// <summary>
+/// Registro idempotente del alta de nuevos SKU. Almacena la petición original
+/// sin modificar la propiedad exclusiva del stock en Inventory.
+/// </summary>
+public sealed class InventoryProductRegistration
+{
+    private InventoryProductRegistration() { }
+    public string Sku { get; private set; } = string.Empty;
+    public string Nombre { get; private set; } = string.Empty;
+    public int StockInicial { get; private set; }
 }
 
 /// <summary>
