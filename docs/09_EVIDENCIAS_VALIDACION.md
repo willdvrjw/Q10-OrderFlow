@@ -240,6 +240,17 @@ El pedido de prueba fue `69e7df92-5e33-46ef-93de-2073c208fbd1`; se creó a las 0
 
 **Cierre:** código, tests, README y guía de defensa se contrastaron con los archivos actuales. El proyecto es entregable como ejercicio técnico con evidencia de compilación y funcionamiento. Los límites restantes son validación en un host Docker independiente, inyección exacta de caída entre COMMIT y ACK, y despliegue Kubernetes real (no exigido por el bonus).
 
+## Ampliación de inventario — ingreso de unidades desde la interfaz
+
+**Observado en capturas compartidas el 21/10/2026, hora de Colombia.** En la rama `feat/inventory-and-ui-refinement` se registró mediante el formulario de inventario un ingreso de 3 unidades de `TEST-03`:
+
+- Existencias de Agenda de escritorio (`TEST-03`): **3 → 6**; el indicador cambió de **Existencias bajas** a **Disponible**.
+- La interfaz mostró: «Existencias actualizadas: 6 unidades disponibles de TEST-03».
+- El panel continuó mostrando **7 pedidos, 6 confirmados, 1 rechazado, 0 pendientes**. No se alteraron los estados de los pedidos ya terminados.
+- El indicador de inventario mostró «En tiempo real», señal de una conexión activa al canal SignalR.
+
+**Alcance:** se observó la actualización local del inventario y la confirmación de escritura. La captura **no demuestra aún la entrega efectiva de un frame `inventoryChanged`** a otro navegador sin refrescar, ni prueba por sí sola el polling de respaldo. Queda pendiente reponer el inventario original de prueba, comprobar SignalR con un cliente receptor independiente y ejecutar una reserva que descuente existencias.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
