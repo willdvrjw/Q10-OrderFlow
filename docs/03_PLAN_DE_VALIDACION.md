@@ -4,9 +4,9 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 
 ## QA adicional de entrega multiplataforma — pendiente de la última ejecución
 
-- [ ] Validar sintaxis de Compose con docker compose config --quiet desde la rama QA.
-- [ ] Levantar todos los servicios con docker compose up -d --build, sin eliminar volúmenes ni crear pedidos, y comprobar la disponibilidad HTTP 200 tras el arranque.
-- [ ] Verificar que el healthcheck del contenedor web pasa a healthy; la ruta de salud depende de Nginx y Orders API.
+- [x] `docker compose config --quiet` completó sin errores en la rama QA (21/10/2026).
+- [ ] `docker compose up -d --build` compiló las tres imágenes correctamente en Codespaces (web: `npm run build` completado); al final `/health/ready` respondió **504** y **web unhealthy**. Falta diagnosticar el proxy/red y revalidar HTTP 200. No se eliminaron volúmenes.
+- [ ] El healthcheck de web aún indica **unhealthy** porque Nginx no recibió respuesta de Orders API (HTTP 504); verificar conectividad de Nginx y política Docker FORWARD/DOCKER-USER específica de Codespaces antes de asumir un defecto del servicio.
 - [ ] Confirmar que el puerto local 8080 continúa siendo accesible en Codespaces después de cambiar el bind a 127.0.0.1; comprobar alternativa 8090 solo si resulta necesario.
 - [ ] Repetir las siete pruebas backend con el perfil tests después de los cambios finales de Compose y del hook SignalR de Orders.
 - [ ] Comprobar recuperación de la conexión SignalR al abrir el navegador ANTES de que Orders API esté listo; el código ahora reintenta el arranque inicial sin desactivar polling.
