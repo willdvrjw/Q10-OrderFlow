@@ -7,7 +7,7 @@ namespace Orders.Api.Domain;
 /// </summary>
 public sealed class Order
 {
-    // EF Core podrá materializar entidades almacenadas cuando integremos persistencia.
+    // Constructor requerido por EF Core para materializar pedidos persistidos.
     private Order() { }
 
     public Guid Id { get; private set; }
