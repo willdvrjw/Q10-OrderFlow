@@ -104,8 +104,8 @@ export default function App() {
         <section className="metrics" aria-label="Resumen de pedidos">
           <Metric label="Pedidos totales" value={orders.length} type="total" detail="Solicitudes registradas" />
           <Metric label="Pendientes" value={pending} type="pending" detail="Esperando inventario" />
-          <Metric label="Confirmados" value={confirmed} type="confirmed" detail="Stock reservado" />
-          <Metric label="Rechazados" value={rejected} type="rejected" detail="Sin stock disponible" />
+          <Metric label="Confirmados" value={confirmed} type="confirmed" detail="Inventario reservado" />
+          <Metric label="Rechazados" value={rejected} type="rejected" detail="Sin existencias" />
         </section>
 
         <div className="dashboard" id="pedidos">
