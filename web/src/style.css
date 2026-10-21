@@ -467,3 +467,10 @@ tbody tr:hover { background: #fafbfd; }
   .inventory-editor { padding: 18px 16px; }
   .inventory-preview { gap: 20px; }
 }
+
+@media (max-width: 380px) {
+  .brand-icon { display: none; }
+  .brand-title { font-size: 19px; }
+  .topnav a { font-size: 10px; padding: 7px 5px; }
+  .connection { padding: 8px; }
+}
