@@ -53,9 +53,9 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 
 ## Ampliación pendiente: alta dinámica de productos y limpieza de Chrome — 21/10/2026
 
-**Rama:** `feat/dynamic-products-and-console-quality`. Las tareas siguientes se registran como pendientes: **el código está incorporado, no compilado ni probado aún en Codespaces**.
+**Rama:** `feat/dynamic-products-and-console-quality`. Ampliación compilada y verificada en Codespaces: siete pruebas backend aprobadas, APIs HTTP 200, creación de producto y pedido comprobada por el usuario, protección de SKU duplicados y persistencia de catálogo, inventario y pedidos tras reinicio. Los escenarios no observados permanecen explícitamente pendientes.
 
-- [x] Compilar `orders-api`, `inventory-worker` y `web` desde esta rama con `docker compose up -d --build`: las tres imágenes compilaron correctamente, sin errores C# ni TypeScript; los contenedores se iniciaron. Las primeras consultas HTTP tras reiniciarlos devolvieron 502, por lo que **aún no se ha comprobado la disponibilidad posterior**.
+- [x] Compilar `orders-api`, `inventory-worker` y `web` desde esta rama con Docker Compose: tres imágenes compiladas sin errores C# o TypeScript; tras corregir DNS dinámico en Nginx se obtuvieron **HTTP 200** en los tres endpoints y `nginx -t` correcto. El error 502 inicial quedó resuelto.
 - [x] Ejecutar **7 pruebas** (5 originales + 2 nuevas PostgreSQL): tras restablecer la comunicación Docker con la regla `DOCKER-USER` específica del puente `br-d944a5fdf444`, la segunda ejecución terminó con **7 aprobadas, 0 fallidas**. La primera falló con cuatro timeouts de conexión a PostgreSQL (no fallos de lógica).
 - [x] Tras reconstruir únicamente `web` con resolución DNS dinámica de Docker, `nginx -t` declaró configuración correcta y `GET /health/ready`, `GET /products`, `GET /inventory` devolvieron **HTTP 200**, con los tres SKU y el stock original (`ABC-01=96`, `TEST-03=6`, `XYZ-02=20`). Los logs de Nginx corroboran las tres solicitudes 200.
 - [ ] Verificar además negociación y actualización de ambos hubs SignalR tras corregir la resolución Docker; la comprobación HTTP anterior no equivale a comprobar WebSockets.
@@ -67,11 +67,13 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [x] Comprobar manualmente que **Agregar producto nuevo** no permite guardar un SKU duplicado: el usuario confirmó expresamente que el formulario impide el guardado.
 - [x] Probar `POST /products` directo con el SKU dinámico existente `FRP` en minúsculas (`frp`): **HTTP 409 Conflict**, mensaje «El SKU ya está registrado. Utiliza uno distinto.» y comparaciones `cmp -s` idénticas antes/después de `GET /products`, `GET /inventory` y `GET /orders`. Queda validada la unicidad del backend sin modificar información.
 - [x] Reiniciar sin `down -v` los servicios `orders-api`, `inventory-worker` y `web`, comparando instantáneas reales antes/después de `GET /products`, `GET /inventory` y `GET /orders`: los **tres archivos resultaron idénticos** (`SIN CAMBIOS - CORRECTO`). El catálogo conserva el nuevo producto **Foto Retablos Personalizados (`FRP`)** junto a los tres SKU de la semilla; cinco contenedores activos después del reinicio.
-- [ ] Crear sucesivos SKU de prueba y comprobar que las tarjetas **desbordan únicamente su zona con scroll**, sin superar la altura del editor derecho en escritorio y móvil; botón de alta accesible debajo de las tarjetas.
-- [ ] Revisar alineación a la izquierda de «Selecciona un producto y registra un ingreso o define su cantidad total».
+- [x] **Comprobación visual comunicada por el usuario:** diseño de Inventario disponible correcto tanto en escritorio como en vista móvil, con área desplazable, altura equilibrada y botón de alta debajo de tarjetas. El usuario confirmó «están bien, confía en mí», sin enviar nuevas capturas.
+- [ ] Ensayar explícitamente un catálogo con muchos SKU que obligue a desplazamiento prolongado; la aprobación visual anterior corresponde al catálogo actual.
+- [x] Aprobación visual comunicada por el usuario: el texto introductorio de «Actualizar existencias» está correctamente alineado a la izquierda.
 - [ ] Volver a inspeccionar Problemas de Chrome: el buscador de pedidos ya incluye `id`/`name` y los campos de Inventory también; comprobar la desaparición de esa advertencia con recarga nueva.
 - [ ] Investigar el error asíncrono de `chrome.runtime` en un perfil sin extensiones para separar errores del navegador/terceros de errores de la aplicación. No silenciar la consola globalmente ni atribuir mensajes de extensiones a React sin evidencia.
-- [ ] Evaluar el resultado final, corregir defectos detectados y **fusionar a main solamente después de aprobar**.
+- [x] Cerrar la validación manual solicitada: siete pruebas aprobadas, alta/pedido/stock, unicidad API HTTP 409, persistencia idéntica de tres recursos tras reinicio y aprobación visual de escritorio/móvil.
+- [ ] Confirmar e integrar por avance rápido en `main` sin reescribir reglas de Q10; conservar documentados los ensayos de extensión no realizados.
 
 ## Cinco pruebas backend implementadas y verificadas
 
