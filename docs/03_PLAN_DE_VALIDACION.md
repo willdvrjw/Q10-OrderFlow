@@ -51,9 +51,9 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [ ] Comprobar que el formulario normal sigue aceptando un pedido válido insuficiente con HTTP 201 Pending, para que Inventory lo resuelva a Rejected según Q10.
 - [x] Integrar por **fast-forward** `feat/inventory-and-ui-refinement` a `main` después de las cinco pruebas backend aprobadas, frontend reconstruido mediante Docker, HTTP de API e inventario correcto y confirmaciones manuales de la interfaz. No se reescribió historial ni se eliminaron volúmenes.
 
-## Ampliación pendiente: alta dinámica de productos y limpieza de Chrome — 21/10/2026
+## Ampliación: alta dinámica de productos y limpieza de Chrome — 21/10/2026
 
-**Rama:** `feat/dynamic-products-and-console-quality`. Ampliación compilada y verificada en Codespaces: siete pruebas backend aprobadas, APIs HTTP 200, creación de producto y pedido comprobada por el usuario, protección de SKU duplicados y persistencia de catálogo, inventario y pedidos tras reinicio. Los escenarios no observados permanecen explícitamente pendientes.
+**Origen:** `feat/dynamic-products-and-console-quality`, integrada a `main` mediante fast-forward el 21/10/2026. Ampliación compilada y verificada en Codespaces: siete pruebas backend aprobadas, APIs HTTP 200, creación de producto y pedido comprobada por el usuario, protección de SKU duplicados y persistencia de catálogo, inventario y pedidos tras reinicio. Los escenarios no observados permanecen explícitamente pendientes.
 
 - [x] Compilar `orders-api`, `inventory-worker` y `web` desde esta rama con Docker Compose: tres imágenes compiladas sin errores C# o TypeScript; tras corregir DNS dinámico en Nginx se obtuvieron **HTTP 200** en los tres endpoints y `nginx -t` correcto. El error 502 inicial quedó resuelto.
 - [x] Ejecutar **7 pruebas** (5 originales + 2 nuevas PostgreSQL): tras restablecer la comunicación Docker con la regla `DOCKER-USER` específica del puente `br-d944a5fdf444`, la segunda ejecución terminó con **7 aprobadas, 0 fallidas**. La primera falló con cuatro timeouts de conexión a PostgreSQL (no fallos de lógica).
@@ -73,7 +73,7 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [ ] Volver a inspeccionar Problemas de Chrome: el buscador de pedidos ya incluye `id`/`name` y los campos de Inventory también; comprobar la desaparición de esa advertencia con recarga nueva.
 - [ ] Investigar el error asíncrono de `chrome.runtime` en un perfil sin extensiones para separar errores del navegador/terceros de errores de la aplicación. No silenciar la consola globalmente ni atribuir mensajes de extensiones a React sin evidencia.
 - [x] Cerrar la validación manual solicitada: siete pruebas aprobadas, alta/pedido/stock, unicidad API HTTP 409, persistencia idéntica de tres recursos tras reinicio y aprobación visual de escritorio/móvil.
-- [ ] Confirmar e integrar por avance rápido en `main` sin reescribir reglas de Q10; conservar documentados los ensayos de extensión no realizados.
+- [x] Integrar por **fast-forward** `feat/dynamic-products-and-console-quality` en `main` tras aprobar siete pruebas automáticas, flujo de alta/productos/inventario, SKU duplicado HTTP 409, persistencia y validación visual del usuario. Las entidades `Order`, `OrderStatus`, el manejador de reservas y los contratos de eventos originales permanecieron sin cambios. Se documentaron separadamente los ensayos adicionales no realizados.
 
 ## Cinco pruebas backend implementadas y verificadas
 
