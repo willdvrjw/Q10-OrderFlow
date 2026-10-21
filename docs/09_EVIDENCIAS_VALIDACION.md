@@ -273,6 +273,14 @@ Después se indicó modificar desde otra pestaña las existencias de `TEST-03` m
 
 El panel permaneció en **8 pedidos**, con **6 Confirmed**, **2 Rejected** y **0 Pending**. Se observó así que la validación preventiva justo antes del envío impide una repetición innecesaria cuando la cantidad se incrementa después de precargar el pedido rechazado. Esta evidencia **no prueba aún** el camino de creación exitosa con cuatro unidades, ni garantiza que no haya una reserva concurrente entre la consulta y el procesamiento asíncrono.
 
+## Segundo hallazgo de repetición — variación de cantidad con stock suficiente
+
+**Observación comunicada por el usuario (21/10/2026):** después de reponer inventario, se volvió a abrir un pedido previamente rechazado por **4 unidades**; se cambió el campo a **5**, y se creó un pedido nuevo independiente porque la versión anterior comprobaba únicamente la disponibilidad, pero no la equivalencia con la solicitud original. No se dispone aquí del ID ni del estado final de ese último pedido, y no se alterará retroactivamente el historial.
+
+**Corrección incorporada en la rama, pendiente de validación funcional en navegador:** en modo repetición se mantienen fijos cliente y SKU; se detecta de inmediato cualquier cantidad diferente y se inhabilita `Confirmar repetición`. La validación se repite dentro del manejador `submit`; además se consulta el pedido original mediante `GET /orders/{id}` y se compara su cliente, SKU, cantidad y estado terminal antes del POST, junto con una nueva consulta de stock. Se añadió `Cancelar repetición` para volver al modo de registro normal.
+
+**Invariantes:** los estados `Pending`, `Confirmed` y `Rejected` siguen sin modificaciones; ningún pedido rechazado se reabre. Una nueva solicitud con exactamente los mismos datos seguirá recibiendo su propio ID, y su confirmación dependerá del Worker. Pendiente reconstruir el frontend y comprobar cantidad distinta con saldo suficiente sin crear otro pedido.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
