@@ -386,8 +386,59 @@ tbody tr:hover { background: #fafbfd; }
 .inventory-heading p { max-width: 670px; font-size: 13px; line-height: 1.65; text-align: center; }
 .inventory-layout {
   display: grid; grid-template-columns: minmax(0, 1.38fr) minmax(315px, .9fr);
-  align-items: stretch; gap: 20px;
+  align-items: start; gap: 20px;
 }
+.stock-column {
+  display: flex; flex-direction: column; gap: 12px;
+  min-width: 0; min-height: 0; overflow: hidden;
+}
+.stock-scroll-area {
+  flex: 1 1 auto; min-height: 0; min-width: 0;
+  overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+  scrollbar-width: thin; scrollbar-color: #c5d3e3 transparent;
+  padding: 2px 8px 3px 2px;
+}
+.stock-scroll-area:focus-visible {
+  outline: 2px solid #e9ae84; outline-offset: -2px; border-radius: 10px;
+}
+.stock-column-actions {
+  flex: 0 0 auto; padding: 13px 3px 0;
+  border-top: 1px solid #e4ebf3;
+}
+.stock-add-button {
+  display: flex; align-items: center; justify-content: center;
+  gap: 9px; width: 100%; min-height: 45px; padding: 10px 14px;
+  border: 1px solid #d2a486; border-radius: 11px;
+  background: linear-gradient(125deg, #fffaf5, #ffffff);
+  color: #9a481e; font-size: 12px; font-weight: 600;
+  transition: border-color .2s, background .2s, box-shadow .2s;
+}
+.stock-add-button:hover { border-color: #bd784e; background: #fff4e9; }
+.stock-add-button:focus-visible { outline: 2px solid #d87942; outline-offset: 3px; }
+.stock-add-button span { font-size: 20px; line-height: 1; font-weight: 400; }
+.new-product-form {
+  display: flex; flex-direction: column; align-items: stretch;
+  margin: 0 0 15px; padding: 19px; border: 1px solid #d7e2ee;
+  border-radius: 14px; background: linear-gradient(145deg, #f7fbff, #ffffff);
+}
+.new-product-form h3 { font-size: 17px; color: #213952; margin: 0 0 7px; font-weight: 600; }
+.new-product-form > p { margin: 0 0 16px; color: #6a7d93; font-size: 11px; line-height: 1.55; text-align: left; }
+.new-product-form label { margin: 0 0 6px; font-size: 11px; font-weight: 600; color: #334a62; }
+.new-product-form label span { color: #bc5529; }
+.new-product-form input {
+  width: 100%; min-width: 0; min-height: 42px;
+  border: 1px solid #dce5ef; border-radius: 9px;
+  padding: 0 12px; margin: 0 0 13px;
+  background: #ffffff; color: #24384f; font-size: 12px;
+}
+.new-product-form input[aria-invalid="true"] { border-color: #dc2626; }
+.new-product-form .field-error {
+  display: block; width: 100%; margin: -5px 0 12px;
+  text-align: center; font-size: 11px; line-height: 1.5; color: #b91c1c;
+}
+.new-product-form .product-form-help { margin: -3px 0 14px; text-align: left; }
+.new-product-form .primary-button { margin-top: 0; min-height: 43px; }
+.new-product-form .notice { margin-top: 12px; }
 .stock-list {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 13px; align-content: start;
@@ -431,7 +482,7 @@ tbody tr:hover { background: #fafbfd; }
   font-size: 32px; line-height: 1.08; letter-spacing: -.04em; font-weight: 600; color: #192c45;
 }
 .stock-card-bottom span { color: #72849b; font-size: 11px; }
-.stock-note { grid-column: 1 / -1; margin: 3px 0 0; font-size: 11px; line-height: 1.55; color: #728197; text-align: center; }
+.stock-note { margin: 10px 2px 0; font-size: 11px; line-height: 1.55; color: #728197; text-align: center; }
 .inventory-loading { grid-column: 1 / -1; color: var(--muted); padding: 24px 8px; font-size: 13px; }
 .inventory-editor {
   padding: 24px; border: 1px solid #e7ecf2; border-radius: 17px;
@@ -440,7 +491,7 @@ tbody tr:hover { background: #fafbfd; }
 }
 .inventory-editor h3 { font-size: 20px; letter-spacing: -.03em; margin: 0 0 7px; }
 .inventory-editor > p:not(.inventory-warning):not(.inventory-disclaimer) {
-  color: #6a7d93; font-size: 12px; line-height: 1.6; margin: 0 0 19px; text-align: center;
+  color: #6a7d93; font-size: 12px; line-height: 1.6; margin: 0 0 19px; text-align: left;
 }
 .inventory-editor label { font-size: 12px; color: #35465c; font-weight: 600; margin: 0 0 7px; }
 .inventory-editor select, .inventory-editor input {
@@ -549,6 +600,8 @@ tbody tr:hover { background: #fafbfd; }
 /* El listado nunca impone su altura al formulario en vista móvil. */
 @media (max-width: 1050px) {
   .inventory-layout { grid-template-columns: 1fr; }
+  .stock-column { height: auto !important; max-height: 560px; }
+  .stock-scroll-area { max-height: 450px; }
   .stock-card { min-height: 155px; }
 }
 @media (max-width: 920px) {
