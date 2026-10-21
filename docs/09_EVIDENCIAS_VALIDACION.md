@@ -193,6 +193,15 @@ La funcionalidad WebSocket quedó restaurada y el sistema regresó al estado de 
 
 **Estado:** compilación y arranque de contenedores desde un clon nuevo aprobados dentro del mismo Codespace. **Pendiente:** HTTP `/health/ready`, seed, `GET /orders` inicial y creación/reserva real de pedidos desde esta copia. El ensayo no demuestra todavía portabilidad en otro host ni elimina la particularidad de `iptables-legacy` observada anteriormente en este Codespace.
 
+### Recuperación de la conectividad en el clon
+
+En la red nueva de la copia limpia, la conexión TCP inicial entre contenedores expiraba por la política heredada `iptables-legacy FORWARD DROP`, tal como había sucedido antes en el Codespace. Se identificó el puente `br-70dcb87d5e79`, se añadió una regla temporal exclusivamente para comunicaciones dentro de ese puente y un contenedor separado de PostgreSQL respondió `SELECT 1`.
+
+Tras `docker compose restart orders-api inventory-worker`, `docker compose ps` mostró los cinco servicios activos y PostgreSQL/RabbitMQ saludables. La petición `curl -i --max-time 15 http://localhost:8080/health/ready` respondió **HTTP 200** con `{"status":"ready"}`.
+
+**Alcance:** API lista y accesible desde la instalación recién clonada dentro del Codespace. Sigue pendiente comprobar el catálogo inicial, la lista vacía y la creación/reserva de un pedido desde esa instalación. El ajuste temporal de reglas del host no se incluyó en el repositorio y no demuestra, por sí solo, despliegue en cualquier máquina Docker.
+
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
