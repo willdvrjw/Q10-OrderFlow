@@ -1,9 +1,10 @@
 # Etapa de construcción: React + TypeScript + Vite.
 FROM node:24-alpine AS build
 WORKDIR /website
-COPY web/package.json ./
-# El lockfile se generará y versionará tras la primera restauración comprobada.
-RUN npm install --no-audit --no-fund
+COPY web/package.json web/package-lock.json ./
+# npm ci respeta el lockfile, verifica su coherencia y falla si no coincide.
+# Las dependencias permanecen en la etapa build, no en la imagen Nginx final.
+RUN npm ci --no-audit --no-fund
 COPY web/ ./
 RUN npm run build
 
