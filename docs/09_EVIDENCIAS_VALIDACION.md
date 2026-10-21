@@ -382,7 +382,15 @@ El usuario ejecutó una comprobación reproducible en Codespaces: guardó las re
 
 El catálogo devuelto al finalizar incluye los SKU iniciales `TEST-03`, `XYZ-02`, `ABC-01` y el nuevo **`FRP` — Foto Retablos Personalizados**. `docker compose ps` mostró los cinco servicios activos, PostgreSQL saludable y Nginx publicando el puerto 8080. El ensayo no modificó ni borró volúmenes.
 
-**Conclusión:** la persistencia de catálogo, existencias y pedidos está verificada tras reiniciar la aplicación con los volúmenes existentes. Esta evidencia no corresponde a recrear los volúmenes desde cero ni a un despliegue en otro host. Todavía falta comprobar el código HTTP 409 en un intento directo de registrar de nuevo el SKU dinámico y verificar el scroll con un catálogo más extenso.
+**Conclusión:** la persistencia de catálogo, existencias y pedidos está verificada tras reiniciar la aplicación con los volúmenes existentes. Esta evidencia no corresponde a recrear los volúmenes desde cero ni a un despliegue en otro host. La comprobación de HTTP 409 con el SKU dinámico se realizó posteriormente (véase la sección siguiente); queda por verificar el scroll con un catálogo más extenso.
+
+## Alta duplicada mediante API — HTTP 409 sin efectos secundarios
+
+**21/10/2026, Codespaces:** después de crear y persistir `FRP` (Foto Retablos Personalizados), se efectuó un `POST /products` directamente por Nginx, saltándose el formulario, con `{"sku":"frp","nombre":"Foto Retablos Personalizados","disponible":0}`. La API normalizó el SKU en mayúsculas y respondió **HTTP 409 Conflict** con `{"mensaje":"El SKU ya está registrado. Utiliza uno distinto."}`.
+
+Antes y después se capturaron respuestas de `GET /products`, `GET /inventory` y `GET /orders`. Las tres comparaciones byte a byte fueron **«SIN CAMBIOS - CORRECTO»**.
+
+**Conclusión:** la API bloquea duplicados independientemente del frontend y no altera el catálogo, el inventario ni los pedidos existentes. La prueba no intenta crear SKU adicionales. La integridad frente a carreras simultáneas se basa en las claves primarias de PostgreSQL; este ensayo específico fue secuencial.
 
 ## Pendiente de aprobación
 
