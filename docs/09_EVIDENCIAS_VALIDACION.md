@@ -151,7 +151,17 @@ En la consola de Chrome DevTools, bajo **Red → Socket**, se observó una solic
 
 **Aprobado:** negociación y establecimiento de WebSocket desde el frontend alojado en Codespaces.
 
-**Todavía pendiente:** inspeccionar un frame `ordersChanged` recibido tras una transición de estado y diferenciar su efecto del polling REST de respaldo. El HTTP 101, por sí solo, no demuestra entrega de mensajes de aplicación.
+**Comprobación ampliada:** posteriormente se recibió el frame `ordersChanged` con `type:1` y `orderId`, documentado en la sección de evento recibido. Queda por comprobar el polling con la conexión SignalR interrumpida.
+
+## SignalR — evento de negocio recibido sobre WebSocket (aprobado)
+
+**Fecha observada:** 20/10/2026, hora de Colombia.
+
+En Chrome DevTools, Red → Socket → Mensajes, con una conexión WebSocket previamente negociada mediante HTTP **101**, se observó un frame de aplicación SignalR con `"type":1`, `"target":"ordersChanged"` y `"arguments":[{"orderId":"9a1feb0a-488b-4bed-af3b-e4099f9dbf81"}]`. El panel pasó a **6 pedidos totales, 5 confirmados, 1 rechazado y 0 pendientes**, en concordancia con la creación del pedido de comprobación.
+
+Los frames de tipo `6` visibles en la misma conexión son mensajes de mantenimiento (*ping*) y no deben confundirse con el evento de aplicación.
+
+**Resultado comprobado:** el Hub envió el evento `ordersChanged` y el navegador lo recibió realmente mediante WebSocket. **Límite:** la captura no aísla el efecto de ese frame sobre el refresco del panel, ya que también hay polling REST cada cinco segundos. Está pendiente verificar la recuperación del panel con SignalR bloqueado y polling activo.
 
 ## Pendiente de aprobación
 
@@ -162,7 +172,8 @@ En la consola de Chrome DevTools, bajo **Red → Socket**, se observó una solic
 - [x] Verificar visualmente mensajes de error en el formulario (cliente y SKU obligatorios; captura del navegador).
 - [x] Comprobar creación y actualización de pedidos desde el formulario web (pedido ABC6E820 confirmado).
 - [ ] Verificar la versión responsive.
-- [ ] Verificar SignalR y polling frente a desconexión.
+- [x] Establecer WebSocket y recibir `ordersChanged` por SignalR (HTTP 101 y frame `type:1`).
+- [ ] Comprobar polling de respaldo con SignalR bloqueado.
 - [x] Ensamblar manifiestos Kubernetes con Kustomize; ConfigMap, Service y Deployment obtenidos (validación contra un clúster no realizada).
 - [ ] Ejecutar el arranque obligatorio desde copia limpia en un host Docker sin ajustes especiales.
 - [ ] Revisar la consistencia final entre README, código y guía de defensa.
