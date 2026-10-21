@@ -289,6 +289,14 @@ El panel permaneció en **8 pedidos**, con **6 Confirmed**, **2 Rejected** y **0
 
 **Conclusión:** el ajuste basado en un saldo obsoleto no sobrescribe ni modifica el inventario. No se crearon pedidos; este ensayo no equivale a probar un conflicto entre dos peticiones simultáneas, que se cubre parcialmente mediante el test de PostgreSQL.
 
+## Notificaciones y mensajes de validación — verificación visual
+
+**Fecha:** 21/10/2026 (hora local de Colombia). Tras sustituir los avisos del frontend por el componente `FlashNotice`, se solicitó al usuario comprobar manualmente dos acciones: cerrar un aviso mediante el botón **X** y verificar que el error rojo de cantidad distinta al repetir un rechazado apareciera centrado.
+
+**Resultado comunicado:** el usuario confirmó expresamente «Sí, funcionan correctamente». El componente permite cerrar las notificaciones de éxito, error e información sin modificar pedidos, inventario ni la validación de campos; los errores de campo siguen visibles mientras el dato sea inválido, incluso cuando se cierra un aviso.
+
+**Alcance:** aprobación visual confirmada por el usuario; todavía falta ejecutar nuevamente la compilación del frontend desde el último commit y las cinco pruebas finales antes de fusionar la rama.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
