@@ -14,6 +14,7 @@ builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseNpgsql(connectionString));
 builder.Services.AddScoped<OrderCreatedHandler>();
 builder.Services.AddScoped<InventoryManagementService>();
+builder.Services.AddScoped<InventoryProductRegistrationService>();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IInventoryChangeNotifier, SignalRInventoryChangeNotifier>();
 
