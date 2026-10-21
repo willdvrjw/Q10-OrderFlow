@@ -96,7 +96,7 @@ services:
       inventory-worker:
         condition: service_started
 
-  # Cinco pruebas reales: tres de dominio y dos sobre PostgreSQL.
+  # Siete pruebas reales: tres de dominio y cuatro de integración sobre PostgreSQL.
   # No participa del arranque por defecto ni modifica las bases de los servicios.
   backend-tests:
     profiles: ["tests"]
