@@ -249,7 +249,15 @@ El pedido de prueba fue `69e7df92-5e33-46ef-93de-2073c208fbd1`; se creó a las 0
 - El panel continuó mostrando **7 pedidos, 6 confirmados, 1 rechazado, 0 pendientes**. No se alteraron los estados de los pedidos ya terminados.
 - El indicador de inventario mostró «En tiempo real», señal de una conexión activa al canal SignalR.
 
-**Alcance:** se observó la actualización local del inventario y la confirmación de escritura. La captura **no demuestra aún la entrega efectiva de un frame `inventoryChanged`** a otro navegador sin refrescar, ni prueba por sí sola el polling de respaldo. Queda pendiente reponer el inventario original de prueba, comprobar SignalR con un cliente receptor independiente y ejecutar una reserva que descuente existencias.
+**Alcance del primer ensayo:** las capturas de ingreso muestran la actualización local y su confirmación. El transporte WebSocket se comprobó posteriormente, según se documenta en la sección siguiente. Todavía falta probar el polling de respaldo propio del inventario y una reserva nueva que descuente existencias.
+
+## Comprobación del canal de inventario en dos pestañas
+
+**Fecha:** 21/10/2026 (hora de Colombia). En Chrome DevTools, la captura mostró las conexiones `inventory?id=...` y `orders?id=...` establecidas con **HTTP 101**. Se seleccionó `inventory?id=...` y la pestaña **Mensajes**, donde inicialmente aparecían los ping `{"type":6}` de SignalR.
+
+Después se indicó modificar desde otra pestaña las existencias de `TEST-03` mediante **Establecer cantidad total** a 3 unidades, manteniendo DevTools abierto en la primera. **El usuario confirmó expresamente «Sí apareció»** cuando se le preguntó por el mensaje `inventoryChanged`. Esta es una confirmación textual del resultado, no una captura del frame completo: no se verificó visualmente aquí el contenido exacto de sus argumentos ni se mostró el valor final de stock tras el ajuste.
+
+**Conclusión acotada:** conexión WebSocket de inventario observada y recepción del evento de ajuste confirmada por el usuario. Pendiente comprobar un evento producido por **reserva**, además de fallos controlados de SignalR y recuperación mediante polling propio del inventario.
 
 ## Pendiente de aprobación
 
