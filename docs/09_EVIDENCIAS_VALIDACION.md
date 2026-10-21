@@ -312,6 +312,16 @@ Desde la rama `feat/inventory-and-ui-refinement`, el candidato ejecutó `git pul
 
 Los diez pedidos reflejan la actividad acumulada de las pruebas manuales; **estos comandos de validación no crearon pedidos**. El registro no prueba ejecución en otro host ni todos los escenarios opcionales: quedan por ensayar la caída del WebSocket de inventario y el recorrido completo de una repetición exacta tras la última corrección de la UI.
 
+## Integración final de la ampliación en main
+
+Después de la última ejecución observada del perfil de pruebas (**5/5 aprobadas**), la construcción del frontend con Docker y las respuestas correctas de la API e Inventory, la rama `feat/inventory-and-ui-refinement` se integró en `main` mediante una actualización **fast-forward**, sin reescribir el historial. GitHub confirmó el nuevo HEAD de `main` como `35536e0c2e5a1c6c0e0150916b7e36aa929f7406` antes de los últimos commits de documentación.
+
+Se compararon por SHA de blob los archivos `Order.cs`, `OrderStatus.cs`, `OrdersEndpoints.cs`, `StockResultHandler.cs` y `OrderEvents.cs` entre la rama base y la ampliación. **Todos permanecían idénticos**, conservando los estados `Pending`, `Confirmed` y `Rejected`, y la semántica de creación y procesamiento asíncrono que exige Q10.
+
+No se realizaron modificaciones a las tablas, pedidos o existencias durante la operación de Git. El último entorno de demostración observado mantenía 10 pedidos (8 `Confirmed`, 2 `Rejected`) y stocks `ABC-01=96`, `TEST-03=6`, `XYZ-02=20`.
+
+**Límites documentados, no bloqueantes para la integración:** falta una prueba visual integral de repetición *exacta* con envío y una prueba específica de polling de inventario al bloquear su WebSocket; tampoco se probó despliegue desde un equipo Docker diferente. No se presentan estos ensayos como aprobados.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
