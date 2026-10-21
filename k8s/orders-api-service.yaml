@@ -1,0 +1,18 @@
+# Servicio interno: el frontend/proxy o ingress publicarían el acceso externo.
+apiVersion: v1
+kind: Service
+metadata:
+  name: orderflow-orders-api
+  labels:
+    app.kubernetes.io/name: orderflow
+    app.kubernetes.io/component: orders-api
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: orderflow
+    app.kubernetes.io/component: orders-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

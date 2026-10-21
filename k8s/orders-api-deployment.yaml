@@ -1,0 +1,93 @@
+# Manifiesto de diseño del bonus Kubernetes; no se exige un cluster funcional.
+# Antes de desplegar, sustituir la imagen por una publicada y suministrar Secret.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orderflow-orders-api
+  labels:
+    app.kubernetes.io/name: orderflow
+    app.kubernetes.io/component: orders-api
+spec:
+  # Una réplica: la outbox todavía no incluye leasing distribuido y SignalR
+  # utiliza conexiones locales. Escalar requiere coordinar ambos componentes.
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: orderflow
+      app.kubernetes.io/component: orders-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: orderflow
+        app.kubernetes.io/component: orders-api
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1654
+      containers:
+        - name: orders-api
+          # Imagen de referencia: cambiar antes de implementar en un cluster.
+          image: ghcr.io/replace-owner/orderflow-orders-api:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: orderflow-orders-config
+          env:
+            # No se guardan cadenas con contraseñas en manifiestos ni Git.
+            - name: ConnectionStrings__Orders
+              valueFrom:
+                secretKeyRef:
+                  name: orderflow-orders-secrets
+                  key: orders-connection-string
+            - name: RabbitMq__UserName
+              valueFrom:
+                secretKeyRef:
+                  name: orderflow-orders-secrets
+                  key: rabbitmq-username
+            - name: RabbitMq__Password
+              valueFrom:
+                secretKeyRef:
+                  name: orderflow-orders-secrets
+                  key: rabbitmq-password
+          # El arranque prepara su base; startup evita reinicios prematuros.
+          startupProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 24
+          # Liveness no depende del broker ni de PostgreSQL.
+          # No se debe reiniciar por una interrupción temporal del broker.
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 15
+            timeoutSeconds: 2
+            failureThreshold: 3
+          # Readiness sí comprueba PostgreSQL y controla la entrada de tráfico.
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]

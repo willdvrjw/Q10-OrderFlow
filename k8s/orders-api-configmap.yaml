@@ -1,0 +1,13 @@
+# Variables no sensibles. En Kubernetes los secretos permanecen separados.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orderflow-orders-config
+  labels:
+    app.kubernetes.io/name: orderflow
+    app.kubernetes.io/component: orders-api
+data:
+  ASPNETCORE_URLS: "http://+:8080"
+  ASPNETCORE_ENVIRONMENT: "Production"
+  RabbitMq__HostName: "rabbitmq"
+  RabbitMq__Port: "5672"

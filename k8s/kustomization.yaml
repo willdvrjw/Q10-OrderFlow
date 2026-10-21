@@ -1,0 +1,7 @@
+# Permite inspeccionar/validar el conjunto sin necesitar un cluster activo.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - orders-api-configmap.yaml
+  - orders-api-deployment.yaml
+  - orders-api-service.yaml
