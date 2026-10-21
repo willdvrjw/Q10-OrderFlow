@@ -322,6 +322,18 @@ No se realizaron modificaciones a las tablas, pedidos o existencias durante la o
 
 **Límites documentados, no bloqueantes para la integración:** falta una prueba visual integral de repetición *exacta* con envío y una prueba específica de polling de inventario al bloquear su WebSocket; tampoco se probó despliegue desde un equipo Docker diferente. No se presentan estos ensayos como aprobados.
 
+## Nueva ampliación de catálogo y consola — implementación pendiente de ensayo
+
+**Fecha de preparación:** 21/10/2026. A petición del usuario se creó la rama `feat/dynamic-products-and-console-quality`, independiente de `main`, que mantiene la última versión funcional validada (10 pedidos, 8 Confirmed, 2 Rejected). **No se han ejecutado todavía las nuevas versiones en Codespaces.**
+
+**Cambios programados y comprometidos en rama:** nuevas tablas persistentes `catalog_products` (Orders) e `inventory_product_registrations` (Inventory); alta mediante `POST /products`, aprovisionamiento idempotente vía HTTP interno en `POST /inventory/products`, catálogo unido a los productos de la semilla, validación de SKU nuevos desde Orders, notificación `inventoryChanged`; formulario `NewProductForm` con nombre/SKU/stock y actualización de pedidos e inventario. La columna de tarjetas tiene scroll propio y un botón de alta inferior; se sincroniza su altura con la del editor de existencias. El texto introductorio del editor ahora se alinea a la izquierda y el buscador de pedidos tiene `id`/`name`.
+
+**Pruebas incorporadas pero todavía no ejecutadas:** dos nuevas integraciones PostgreSQL de registro/uso de SKU e idempotencia sin sobrescribir stock. La suite esperada suma **7 pruebas**.
+
+**Origen del aviso de Chrome:** el informe del usuario mostró «A form field element should have an id or name attribute» y un error de mensajes asíncronos de navegador que puede provenir de extensiones. La primera advertencia se atiende con identificadores y nombres en los controles. El segundo problema no puede atribuirse a Orders/Inventory ni darse por resuelto sin aislar extensiones mediante un perfil limpio y examinar la traza.
+
+**Pendiente:** compilar servicios y frontend, ejecutar pruebas, comprobar alta/orden/stock/reinicio, inspeccionar scroll y reproducir DevTools antes de cualquier fusión en `main`.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
