@@ -64,7 +64,8 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [ ] Capturar respuesta HTTP 201, JSON de `GET /products` y `GET /inventory` para documentar identificador exacto, SKU y existencias iniciales.
 - [x] **Prueba manual comunicada:** el usuario ajustó las existencias del producto nuevo, creó un pedido para ese producto y confirmó que el inventario se actualizó correctamente y el flujo funcionó. No se recibieron las cifras antes/después ni evidencia del frame SignalR.
 - [ ] Verificar vía REST la transición `Pending → Confirmed` del SKU nuevo, su descuento exacto, el rechazo por falta de existencias sin stock negativo y la notificación por SignalR.
-- [ ] Reintentar `POST /products` con el mismo SKU y comprobar `409 Conflict` sin duplicarlo ni resetear las unidades; la repetición exacta idempotente interna de Inventory se comprueba mediante test PostgreSQL.
+- [x] Comprobar manualmente que **Agregar producto nuevo** no permite guardar un SKU duplicado: el usuario confirmó expresamente que el formulario impide el guardado.
+- [ ] Comprobar con `POST /products` directamente que un SKU existente recibe `409 Conflict` sin duplicarlo ni resetear las unidades; la repetición idempotente interna de Inventory está cubierta por test PostgreSQL.
 - [ ] Reiniciar contenedores sin `down -v` y confirmar que producto, nombre, SKU, pedidos e inventario persisten; incluir el mismo SKU en las dos APIs.
 - [ ] Crear sucesivos SKU de prueba y comprobar que las tarjetas **desbordan únicamente su zona con scroll**, sin superar la altura del editor derecho en escritorio y móvil; botón de alta accesible debajo de las tarjetas.
 - [ ] Revisar alineación a la izquierda de «Selecciona un producto y registra un ingreso o define su cantidad total».
