@@ -112,6 +112,12 @@ Desde el panel web se creó el pedido `ABC6E820` (prefijo visible), cliente `Pru
 
 **Alcance:** interfaz de creación y refresco sin recarga manual verificados. Aún no se ha atribuido causalmente el refresco a SignalR en vez del polling de respaldo. Falta revisar responsive y persistencia tras reinicio. El stock posterior de `XYZ-02` no se consultó en este paso.
 
+## Verificación visual responsive (530 × 710)
+
+**Fecha:** 20/10/2026, hora de Colombia. Se revisaron cuatro capturas de Chrome DevTools mostrando una ventana responsive de **530 × 710**, no 390 × 844. Se observan encabezado, banner, métricas en dos columnas, formulario y tarjetas de pedidos en una columna. Los estados y motivos de rechazo aparecen en líneas diferenciadas, después de los cambios de CSS. En las capturas no se aprecia desplazamiento horizontal, pero no se ha medido programáticamente el ancho de desbordamiento.
+
+Los mensajes rojos de la consola apuntan a la página de autenticación de `github.dev/pf-signin` y a un canal de mensajes de navegador/extensión; con estas capturas no se demuestra que se originen en el código React. Sigue **pendiente** comprobar el viewport 390 × 844 y confirmar el resultado en él.
+
 ## Pendiente de aprobación
 
 - [x] Parar y recuperar Inventory Worker sin pérdida del pedido (ensayo REST + Compose verificado).
