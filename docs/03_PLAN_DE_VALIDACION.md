@@ -2,6 +2,18 @@
 
 No se marcará ningún elemento como verificado hasta haberlo ejecutado y guardado evidencia (salida de comandos, logs o prueba de UI). Esta lista está diseñada a partir de los criterios de aceptación del PDF.
 
+## QA adicional de entrega multiplataforma — pendiente de la última ejecución
+
+- [ ] Validar sintaxis de Compose con docker compose config --quiet desde la rama QA.
+- [ ] Levantar todos los servicios con docker compose up -d --build, sin eliminar volúmenes ni crear pedidos, y comprobar la disponibilidad HTTP 200 tras el arranque.
+- [ ] Verificar que el healthcheck del contenedor web pasa a healthy; la ruta de salud depende de Nginx y Orders API.
+- [ ] Confirmar que el puerto local 8080 continúa siendo accesible en Codespaces después de cambiar el bind a 127.0.0.1; comprobar alternativa 8090 solo si resulta necesario.
+- [ ] Repetir las siete pruebas backend con el perfil tests después de los cambios finales de Compose y del hook SignalR de Orders.
+- [ ] Comprobar recuperación de la conexión SignalR al abrir el navegador ANTES de que Orders API esté listo; el código ahora reintenta el arranque inicial sin desactivar polling.
+- [ ] Comprobar apertura del enlace Codespaces desde una cuenta GitHub de evaluador diferente; autenticación/cuota pueden impedirlo y no se promete acceso universal sin cuenta.
+- [ ] Probar en host Docker distinto de Codespaces y validar navegadores/SO por separado; no atribuir esos resultados a QA local.
+- [ ] Tras validar los cambios anteriores, integrar por avance rápido la rama audit/evaluator-onboarding-qa en main, conservando los registros existentes.
+
 ## Checklist de aceptación obligatorio
 
 - [x] Una copia limpia en el mismo Codespace, arrancada con `docker compose up -d --build`, construyó frontend, Orders API, Inventory Worker, RabbitMQ y PostgreSQL; se validó seed y pedido Confirmed. Fue necesaria una regla temporal de firewall del host.
