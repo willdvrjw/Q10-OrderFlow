@@ -2,7 +2,7 @@
 
 Evaluación Fullstack: registro de pedidos, reserva asíncrona de inventario y panel de operaciones.
 
-> **Estado verificado hasta ahora:** Docker construyó los cinco servicios, PostgreSQL y RabbitMQ quedaron saludables, la API respondió, un pedido válido se confirmó y otro sin stock se rechazó sin descuento indebido. Las dos pruebas nuevas de idempotencia y concurrencia **aún deben ejecutarse**. También falta validar Kubernetes, los escenarios de fallos y un arranque desde copia limpia.
+> **Estado verificado hasta ahora:** Docker construyó los cinco servicios, PostgreSQL y RabbitMQ quedaron saludables, la API respondió, un pedido válido se confirmó y otro sin stock se rechazó sin descuento indebido. **Las cinco pruebas backend ya se ejecutaron y aprobaron** (3 de dominio y 2 contra PostgreSQL real). Los manifiestos del bonus Kubernetes ya están implementados, pero pendientes de validación de ensamblado. También falta ensayar caídas de servicios, la interfaz y el arranque desde copia limpia.
 
 ## Arranque reproducible
 
@@ -63,7 +63,7 @@ Este comando utiliza el perfil opcional de pruebas y no altera el arranque norma
 4. Idempotencia: reenviar OrderCreated con el mismo OrderId y EventId distinto no descuenta inventario dos veces.
 5. Concurrencia: dos reservas distintas sobre el mismo SKU no generan stock negativo y solo una puede descontar cuatro de cinco unidades.
 
-**Aislamiento:** las dos pruebas PostgreSQL crean una base temporal distinta por test y la eliminan al finalizar; no modifican los pedidos de demostración. Requieren permisos de crear y eliminar bases sobre el servidor PostgreSQL de desarrollo. Todavía falta confirmar su resultado desde Codespaces.
+**Aislamiento:** las dos pruebas PostgreSQL crean una base temporal distinta por test y la eliminan al finalizar; no modifican los pedidos de demostración. Requieren permisos de crear y eliminar bases sobre el servidor PostgreSQL de desarrollo. **Resultado verificado en Codespaces el 20/10/2026: cinco aprobadas, ninguna fallida.**
 
 Para compilar sin iniciar servicios, ejecutar dotnet build OrderFlow.slnx. Los tests de PostgreSQL requieren conexión administrativa de pruebas mediante ORDERFLOW_TEST_POSTGRES; el comando con perfil Docker la configura automáticamente.
 
@@ -108,7 +108,7 @@ Reemplazar inicialización de esquemas por migraciones; introducir privilegios m
 - tests/OrderFlow.Tests: cinco pruebas backend, dos con PostgreSQL.
 - web: panel React.
 - infra: inicialización de bases y proxy Nginx.
-- k8s: **bonus pendiente de implementar y validar**.
+- k8s: bonus con Deployment, Service, ConfigMap, probes y límites **implementado; aún no validado en un clúster**. Ver `docs/08_KUBERNETES.md`.
 - docs/01_ARQUITECTURA.md: flujo y fallos.
 - docs/02_DECISIONES_TECNICAS.md: decisiones y costes.
 - docs/03_PLAN_DE_VALIDACION.md: aceptación y evidencias.
@@ -117,4 +117,4 @@ Reemplazar inicialización de esquemas por migraciones; introducir privilegios m
 - docs/06_MATRIZ_EVALUACION.md: criterios y ponderaciones.
 - docs/07_DISENO_INTERFAZ.md: UX accesible y responsive.
 
-**Pendiente antes de entregar:** aprobar las cinco pruebas, comprobar repetibilidad del arranque limpio, ensayar fallos de broker y worker, verificar frontend en navegador y completar el bonus de Kubernetes.
+**Pendiente antes de entregar:** comprobar repetibilidad del arranque limpio, ensayar fallos de broker y worker, verificar frontend en navegador y validar los manifiestos Kubernetes. Ver `docs/09_EVIDENCIAS_VALIDACION.md`.
