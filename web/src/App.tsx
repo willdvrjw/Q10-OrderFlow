@@ -104,6 +104,13 @@ export default function App() {
 
   useEffect(() => { void loadCatalog(); }, [loadCatalog]);
 
+  // Si se registra un SKU en otra pestaña, Inventory notifica por SignalR.
+  // El catálogo de Orders se sincroniza sin exigir recargar la página.
+  useEffect(() => {
+    if (inventoryStock.some(item => !products.some(product => product.sku === item.sku)))
+      void loadCatalog();
+  }, [inventoryStock, products, loadCatalog]);
+
   // Igualar la altura de seguimiento con la del formulario incluso si cambian
   // sus mensajes de validación. La tabla usa scroll independiente.
   useEffect(() => {
@@ -202,6 +209,7 @@ export default function App() {
           products={products}
           onStockUpdate={updateInventory}
           onStockUnavailable={markInventoryUnavailable}
+          onProductCreated={loadCatalog}
         />
 
         <footer className="site-footer">
