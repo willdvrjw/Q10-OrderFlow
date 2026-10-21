@@ -94,6 +94,8 @@ export function OrdersList({
           <span className="sr-only">Buscar pedidos</span>
           <span aria-hidden="true">⌕</span>
           <input
+            id="orders-search"
+            name="ordersSearch"
             value={search}
             onChange={event => setSearch(event.target.value)}
             placeholder="Buscar cliente, SKU o ID"
