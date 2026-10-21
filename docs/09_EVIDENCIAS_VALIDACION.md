@@ -127,7 +127,7 @@ Desde el panel web se creó el pedido `ABC6E820` (prefijo visible), cliente `Pru
 
 **Resolución aceptada por el responsable de la entrega:** se cierra la revisión visual con las capturas a 530 × 710. La comprobación adicional a 390 × 844 se omite por decisión expresa; no se presenta como una prueba realizada ni como incumplimiento demostrado. No se planifican más retoques visuales en esta fase.
 
-Los mensajes rojos de la consola apuntan a la página de autenticación de `github.dev/pf-signin` y a un canal de mensajes de navegador/extensión; no se demuestra que se originen en React. La comprobación de 390 × 844 **no se realizó por decisión expresa del candidato**, después de aceptar la revisión a 530 × 710.
+Los mensajes rojos de la consola apuntan a `github.dev/pf-signin` y a un canal del navegador/extensión; no se demuestra que se originen en React. La comprobación de 390 × 844 **no se realizó por decisión expresa del candidato**, después de aceptar la revisión a 530 × 710.
 
 ## Persistencia de datos tras reinicio — verificada
 
