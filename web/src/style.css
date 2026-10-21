@@ -600,8 +600,7 @@ tbody tr:hover { background: #fafbfd; }
 /* El listado nunca impone su altura al formulario en vista móvil. */
 @media (max-width: 1050px) {
   .inventory-layout { grid-template-columns: 1fr; }
-  .stock-column { height: auto !important; max-height: 560px; }
-  .stock-scroll-area { max-height: 450px; }
+  .stock-column { min-height: 0; }
   .stock-card { min-height: 155px; }
 }
 @media (max-width: 920px) {
