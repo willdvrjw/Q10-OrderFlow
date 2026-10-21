@@ -22,6 +22,18 @@ public static class InventoryDatabaseInitializer
                 var db = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
                 await db.Database.EnsureCreatedAsync(ct);
 
+                // EnsureCreated no agrega tablas a volúmenes ya inicializados.
+                // DDL compatible tanto con esquemas anteriores como nuevos:
+                // no elimina tablas ni reinicializa existencias.
+                await db.Database.ExecuteSqlRawAsync(
+                    @"CREATE TABLE IF NOT EXISTS inventory_product_registrations (
+                        sku varchar(64) PRIMARY KEY,
+                        nombre varchar(160) NOT NULL,
+                        stock_inicial integer NOT NULL
+                            CONSTRAINT ck_product_initial_stock
+                            CHECK (stock_inicial BETWEEN 0 AND 1000000)
+                      )", ct);
+
                 var path = Path.Combine(AppContext.BaseDirectory, "seed", "products.json");
                 var products = JsonSerializer.Deserialize<List<SeedProduct>>(
                     await File.ReadAllTextAsync(path, ct),
