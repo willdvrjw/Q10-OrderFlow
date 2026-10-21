@@ -18,7 +18,7 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [ ] El resultado persistido se recupera si hay una caída después de confirmar la transacción y antes del ACK.
 - [x] Creación real desde formulario web y actualización automática de tabla y contadores sin recarga manual (ABC6E820).
 - [x] Conexión SignalR por WebSocket HTTP 101 y frame `ordersChanged` (`type:1`) recibido en Chrome DevTools.
-- [ ] Polling REST restaura coherencia al bloquear SignalR; todavía sin ensayo controlado.
+- [x] Polling REST restaura coherencia al bloquear SignalR: 1 solicitud afectada; contadores 6→7 y confirmados 5→6 sin recarga manual.
 - [x] Los datos seed se crean automáticamente y reiniciar no restablece el stock consumido (cinco pedidos idénticos antes y después; diff de inventario vacío).
 - [x] Las cinco pruebas backend se ejecutan con un solo comando documentado (20/10/2026, cinco aprobadas).
 - [x] Kubernetes incluye Deployment, Service, ConfigMap, probes y requests/limits; `kubectl kustomize k8s` generó los tres recursos sin errores. No se ha validado contra un clúster.
