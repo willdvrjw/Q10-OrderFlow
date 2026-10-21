@@ -14,7 +14,7 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [x] Un `OrderCreated` repetido no descuenta inventario dos veces (prueba PostgreSQL aislada aprobada).
 - [x] Envíos concurrentes de cantidades incompatibles no producen stock negativo (prueba PostgreSQL aislada aprobada).
 - [x] Si Inventory se detiene, el pedido permanece `Pending` y se procesa al recuperar el worker (pedido f069d769, comprobado en Codespaces por REST y Compose).
-- [ ] Si RabbitMQ se detiene, la API puede seguir registrando pedidos `Pending` y reenviando al recuperar broker.
+- [x] Si RabbitMQ se detiene, la API registra pedidos `Pending` y el procesamiento se recupera al reiniciar el broker (pedido bca788f1 confirmado, stock XYZ-02 = 23).
 - [ ] El resultado persistido se recupera si hay una caída después de confirmar la transacción y antes del ACK.
 - [ ] SignalR actualiza la interfaz y polling restaura coherencia tras desconexión.
 - [ ] Los datos seed se crean automáticamente y reiniciar no restablece el stock consumido.
