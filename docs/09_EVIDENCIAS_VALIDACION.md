@@ -151,7 +151,7 @@ En la consola de Chrome DevTools, bajo **Red → Socket**, se observó una solic
 
 **Aprobado:** negociación y establecimiento de WebSocket desde el frontend alojado en Codespaces.
 
-**Comprobación ampliada:** posteriormente se recibió el frame `ordersChanged` con `type:1` y `orderId`, documentado en la sección de evento recibido. Queda por comprobar el polling con la conexión SignalR interrumpida.
+**Comprobación ampliada:** posteriormente se recibió el frame `ordersChanged` con `type:1` y `orderId`, documentado en la sección de evento recibido. El polling de respaldo también se comprobó posteriormente al bloquear la conexión, según la sección siguiente.
 
 ## SignalR — evento de negocio recibido sobre WebSocket (aprobado)
 
@@ -161,7 +161,17 @@ En Chrome DevTools, Red → Socket → Mensajes, con una conexión WebSocket pre
 
 Los frames de tipo `6` visibles en la misma conexión son mensajes de mantenimiento (*ping*) y no deben confundirse con el evento de aplicación.
 
-**Resultado comprobado:** el Hub envió el evento `ordersChanged` y el navegador lo recibió realmente mediante WebSocket. **Límite:** la captura no aísla el efecto de ese frame sobre el refresco del panel, ya que también hay polling REST cada cinco segundos. Está pendiente verificar la recuperación del panel con SignalR bloqueado y polling activo.
+**Resultado comprobado:** el Hub envió el evento `ordersChanged` y el navegador lo recibió realmente mediante WebSocket. **Límite:** la captura no aísla el efecto de ese frame sobre el refresco del panel, ya que también hay polling REST cada cinco segundos. El polling de respaldo se verificó en el ensayo descrito a continuación.
+
+## Polling de respaldo con SignalR bloqueado — verificado
+
+**Fecha observada:** 20/10/2026, hora de Colombia.
+
+En Chrome DevTools → **Condiciones de la solicitud**, se activó el bloqueo por patrón `*://*/hubs/orders*`. La pantalla confirmó **«1 afectadas»** y el indicador de conexión de OrderFlow pasó a naranja. Mientras el bloqueo seguía habilitado se creó desde una terminal un pedido válido `Prueba Respaldo Polling`, SKU `ABC-01`, cantidad 1.
+
+**Sin actualizar manualmente la página**, los indicadores del panel cambiaron de **6 a 7 pedidos totales** y de **5 a 6 confirmados**. Permanecieron en 0 pendientes y 1 rechazado. El bloqueo de SignalR seguía activo en la captura final.
+
+**Conclusión verificada:** el panel continúa consultando Orders API mediante polling REST y recupera un estado nuevo aun cuando SignalR está bloqueado. La prueba no mide la latencia exacta de recuperación ni implica que el servicio WebSocket deba permanecer deshabilitado. Al terminar se debe desactivar el bloqueo de DevTools.
 
 ## Pendiente de aprobación
 
@@ -173,7 +183,7 @@ Los frames de tipo `6` visibles en la misma conexión son mensajes de mantenimie
 - [x] Comprobar creación y actualización de pedidos desde el formulario web (pedido ABC6E820 confirmado).
 - [ ] Verificar la versión responsive.
 - [x] Establecer WebSocket y recibir `ordersChanged` por SignalR (HTTP 101 y frame `type:1`).
-- [ ] Comprobar polling de respaldo con SignalR bloqueado.
+- [x] Comprobar polling de respaldo con SignalR bloqueado: contadores 6→7 y confirmados 5→6, sin recargar.
 - [x] Ensamblar manifiestos Kubernetes con Kustomize; ConfigMap, Service y Deployment obtenidos (validación contra un clúster no realizada).
 - [ ] Ejecutar el arranque obligatorio desde copia limpia en un host Docker sin ajustes especiales.
 - [ ] Revisar la consistencia final entre README, código y guía de defensa.
