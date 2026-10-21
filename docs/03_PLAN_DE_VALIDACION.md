@@ -33,6 +33,9 @@ No se marcará ningún elemento como verificado hasta haberlo ejecutado y guarda
 - [ ] Verificar que modificar existencias no cambia los siete pedidos anteriores y que una reserva nueva sigue funcionando.
 - [ ] Ejecutar nuevamente las cinco pruebas backend: el test de concurrencia ahora añade aserciones para las operaciones administrativas.
 - [ ] Revisar la imagen de portada aportada por el candidato, el sombreado de contraste, degradados, figuras discretas, responsive y scroll interno del listado de pedidos.
+- [ ] Comprobar por WebSocket `/hubs/inventory` la recepción de `inventoryChanged` después de una reserva y de un ajuste; el navegador debe mostrar el nuevo saldo sin recarga.
+- [ ] Comprobar recuperación de existencias por polling de 10 s al bloquear exclusivamente SignalR de inventario.
+- [ ] Verificar que un pedido `Rejected` conserva su estado tras reponer stock y que «Crear nuevo pedido» únicamente precarga otro formulario sin enviarlo automáticamente.
 - [ ] Fusionar la rama de cambios en `main` solamente después de compilar y comprobar el flujo.
 
 ## Cinco pruebas backend implementadas y verificadas
