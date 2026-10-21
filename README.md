@@ -57,6 +57,19 @@ curl -i -X POST http://localhost:8080/orders \
 
 El POST devuelve HTTP 201 con estado Pending, aunque la reserva aún no terminó. Inventory Worker determina Confirmed o Rejected por evento. Nombre vacío, SKU inexistente o cantidad fuera de 1 a 100 producen HTTP 400 con errores visibles para el frontend.
 
+## Gestión de existencias (ampliación de la prueba)
+
+La página incorpora una sección **Inventario disponible**, con consulta del stock actual, selección de SKU y dos operaciones: **Agregar unidades** y **Establecer cantidad total**. Inventory es el único dueño de la tabla `stock_items`; Orders API nunca actualiza su base.
+
+- `GET /inventory`: consulta existencias actuales desde Inventory Worker (HTTP interno).
+- `POST /inventory/adjustments`: envía `sku`, `operacion` (`agregar` o `establecer`), `cantidad` y `existenciaEsperada`.
+- El ajuste se realiza mediante una sola sentencia SQL condicional: si las existencias cambiaron desde que el operador consultó, devuelve HTTP **409 Conflict** y no sobrescribe la reserva concurrente.
+- La operación de agregar requiere al menos una unidad; establecer permite cero. El navegador actualiza las existencias cada diez segundos. La imagen de portada se encuentra en `web/public/images/centro-logistico-orderflow.webp`.
+
+**Alcance de seguridad:** este panel administrativo es una ampliación **solo para demostración**, sin autenticación, autorización ni historial de ajustes. No debe exponerse en producción ni publicar el puerto 8080 de la demostración a usuarios no confiables. Un despliegue real exige autenticación administrativa, roles y auditoría de movimientos.
+
+**Estado de la ampliación:** código en rama de pruebas `feat/inventory-and-ui-refinement`, sujeto a compilación y validación antes de integrarlo en `main`. Los resultados ya verificados de la versión anterior se registran por separado.
+
 ## Cinco tests backend, un comando
 
 ~~~bash
