@@ -10,7 +10,7 @@ Documento de diseño previo a implementación. Especifica responsabilidades veri
 
 **Orders API (ASP.NET Core):** REST `POST /orders`, `GET /orders`, `GET /orders/{id}`; validación de catálogo; almacenamiento de pedido `Pending`; registro transaccional del evento `OrderCreated` en su outbox; consumo de resultados de stock; transición monotónica a `Confirmed` o `Rejected`; SignalR; endpoints `/health/live` y `/health/ready`.
 
-**Inventory Worker (.NET):** escucha `OrderCreated`; verifica si el pedido ya tiene una reserva registrada; ejecuta descuento atómico condicionado al stock; almacena el resultado de ese pedido y el evento saliente en una sola transacción; reconoce mensajes solamente tras confirmar la transacción.
+**Inventory Worker (.NET):** expone una API HTTP interna de inventario para la consola administrativa de demostración (GET y ajustes de existencias), sin dar a Orders acceso a stock; escucha `OrderCreated`; verifica si el pedido ya tiene una reserva registrada; ejecuta descuento atómico condicionado al stock; almacena el resultado de ese pedido y el evento saliente en una sola transacción; reconoce mensajes solamente tras confirmar la transacción.
 
 **RabbitMQ:** exchange durable `orderflow.events` y rutas explícitas para `order.created`, `stock.reserved`, `stock.rejected`. Colas durables para las suscripciones, mensajes persistentes, publisher confirms, ack manual, DLQ para mensajes no procesables. No garantizamos exactamente-una-vez a nivel de red; diseñamos efectos de negocio idempotentes bajo entrega al-menos-una-vez.
 
