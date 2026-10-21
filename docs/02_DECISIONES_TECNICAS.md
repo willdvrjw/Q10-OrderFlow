@@ -45,12 +45,27 @@ Estado inicial: propuestas adoptadas para implementación, sujetas a corrección
 ## ADR-009: Catálogo estático de prueba con una semilla compartida
 **Decisión:** el catálogo de SKU inicial se entrega como dato versionado para validación local de Orders y stock inicial de Inventory.
 **Por qué:** el enunciado no requiere altas de productos y prohíbe obligar a pasos manuales.
-**Costo:** no resuelve sincronización de catálogo mutable. Se documenta como evolución a eventos de producto en producción.
+**Costo histórico:** esta decisión se conserva para la semilla inicial y los tres SKU de ejemplo. La ampliación de catálogo mutable se detalla en ADR-011.
 
 ## ADR-010: Docker Compose primero, Kubernetes también planificado
 **Decisión:** Compose es fuente de ejecución obligatoria; manifiestos Kubernetes para Orders se modelan desde el inicio.
 **Por qué:** test reproducible y bonus infra sin duplicar reglas de negocio.
 **Costo:** configuración adicional; no se despliega un clúster innecesario.
+
+## ADR-011: Alta dinámica de productos sin alterar el ciclo de pedidos
+**Decisión:** conservar la semilla versionada, guardar altas posteriores en `catalog_products` (base de Orders) y crear existencias iniciales en `inventory_product_registrations` + `stock_items` (base de Inventory).
+
+**Por qué:** el usuario necesita poder dar de alta productos desde el panel, que aparezcan en pedidos y existencias y sobrevivan a reinicios. Orders sigue validando únicamente SKU conocidos y jamás modifica la tabla de inventario. Los eventos `OrderCreated` y `StockReserved/Rejected` y los estados terminales permanecen sin cambios.
+
+**Coordinación:** `POST /products` valida nombre/SKU/cantidad, solicita el aprovisionamiento a Inventory mediante HTTP interno y solo después guarda el SKU en Orders. Inventory escribe su registro idempotente y el stock en una transacción PostgreSQL. Si falla la segunda escritura, repetir **exactamente el mismo SKU/nombre/stock inicial** completa la operación sin resetear existencias. Los SKU duplicados con otros datos y los existentes en la semilla se rechazan.
+
+**Esquemas previos:** se incorporan tablas mediante `CREATE TABLE IF NOT EXISTS` tras `EnsureCreated`. Esta extensión es intencionalmente no destructiva con volúmenes ya poblados; en producción corresponde gestionar migraciones versionadas.
+
+**Compromiso:** no existe un commit distribuido entre Orders e Inventory. Un fallo entre ambos pasos puede dejar un registro provisional de Inventory; reintentar la misma petición lo recupera. Es preferible a anunciar como vendible un SKU que Inventory desconoce. No confundir este alta coordinada con la reserva de pedidos: **los pedidos siguen siendo asíncronos y resistentes a caída de RabbitMQ**.
+
+**Frontera de seguridad:** las rutas administrativas son abiertas solo a efectos de demo local; autenticación/roles y auditoría serían obligatorios antes de exponerlas públicamente. El bonus Kubernetes actual no prueba aún el aprovisionamiento de productos.
+
+**Validación:** dos nuevos ensayos de integración PostgreSQL verifican creación, reserva, reintento y no sobrescritura. Pendientes de ejecutar junto a las cinco pruebas originales y comprobar la interfaz después de compilar.
 
 ## Reglas para cambios
 
