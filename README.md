@@ -2,7 +2,7 @@
 
 Evaluación Fullstack: registro de pedidos, reserva asíncrona de inventario y panel de operaciones.
 
-> **Estado verificado hasta ahora:** Docker construyó los cinco servicios, PostgreSQL y RabbitMQ quedaron saludables, la API respondió, un pedido válido se confirmó y otro sin stock se rechazó sin descuento indebido. **Las cinco pruebas backend ya se ejecutaron y aprobaron** (3 de dominio y 2 contra PostgreSQL real). Los manifiestos del bonus Kubernetes ya están implementados y `kubectl kustomize k8s` produjo ConfigMap, Service y Deployment sin errores; no se validaron en clúster. Ya se verificaron recuperaciones tras detener Worker y RabbitMQ, validación HTTP 400, uso del panel y persistencia tras reinicio. Falta comprobar SignalR independientemente del polling y el arranque desde copia limpia.
+> **Estado verificado hasta ahora:** Docker construyó los cinco servicios, PostgreSQL y RabbitMQ quedaron saludables, la API respondió, un pedido válido se confirmó y otro sin stock se rechazó sin descuento indebido. **Las cinco pruebas backend ya se ejecutaron y aprobaron** (3 de dominio y 2 contra PostgreSQL real). Los manifiestos del bonus Kubernetes ya están implementados y `kubectl kustomize k8s` produjo ConfigMap, Service y Deployment sin errores; no se validaron en clúster. Ya se verificaron recuperaciones tras detener Worker y RabbitMQ, validación HTTP 400, uso del panel y persistencia tras reinicio. SignalR ya se verificó con HTTP 101 y recepción del frame `ordersChanged` por WebSocket. Queda por comprobar el fallback de polling con SignalR bloqueado y el arranque desde copia limpia.
 
 ## Arranque reproducible
 
@@ -117,4 +117,4 @@ Reemplazar inicialización de esquemas por migraciones; introducir privilegios m
 - docs/06_MATRIZ_EVALUACION.md: criterios y ponderaciones.
 - docs/07_DISENO_INTERFAZ.md: UX accesible y responsive.
 
-**Pendiente antes de entregar:** comprobar repetibilidad del arranque desde copia limpia, verificar SignalR independientemente del polling y hacer la revisión final de documentación. La emulación visual adicional a 390 px se omitió por decisión del candidato, después de validar 530 px. Ver `docs/09_EVIDENCIAS_VALIDACION.md`.
+**Pendiente antes de entregar:** comprobar repetibilidad del arranque desde copia limpia, comprobar el respaldo polling con SignalR bloqueado y hacer la revisión final de documentación. La emulación visual adicional a 390 px se omitió por decisión del candidato, después de validar 530 px. Ver `docs/09_EVIDENCIAS_VALIDACION.md`.
