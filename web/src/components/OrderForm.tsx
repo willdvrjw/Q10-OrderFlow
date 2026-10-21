@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { ApiError, createOrder, getInventory, getOrder } from '../lib/api';
+import { FlashNotice } from './FlashNotice';
 import type { FormErrors, InventoryStock, Order, Product } from '../types';
 
 export interface RepeatOrderPrefill {
@@ -15,6 +16,7 @@ interface Props {
   prefill: RepeatOrderPrefill | null;
   catalogError: string | null;
   onReloadCatalog: () => void;
+  onDismissCatalogError: () => void;
   onCreated: () => Promise<void>;
   onCancelRepeat: () => void;
 }
@@ -25,7 +27,8 @@ interface Props {
  * No se espera a confirmar inventario: el resultado inicial es Pending.
  */
 export function OrderForm({
-  products, prefill, catalogError, onReloadCatalog, onCreated, onCancelRepeat,
+  products, prefill, catalogError, onReloadCatalog, onDismissCatalogError,
+  onCreated, onCancelRepeat,
 }: Props) {
   const [name, setName] = useState('');
   const [sku, setSku] = useState('');
@@ -250,10 +253,12 @@ export function OrderForm({
         )}
 
         {catalogError && (
-          <div className="notice error" role="alert">
+          <FlashNotice tone="error" onClose={onDismissCatalogError}>
             {catalogError}
-            <button type="button" className="inline-action" onClick={onReloadCatalog}>Reintentar</button>
-          </div>
+            <button type="button" className="inline-action" onClick={onReloadCatalog}>
+              Reintentar
+            </button>
+          </FlashNotice>
         )}
 
         <label htmlFor="quantity">Cantidad <span aria-hidden="true">*</span></label>
@@ -304,9 +309,9 @@ export function OrderForm({
         </div>
 
         {message && (
-          <div className={'notice ' + messageTone} role="status" aria-live="polite">
+          <FlashNotice tone={messageTone} onClose={() => setMessage(null)}>
             {message}
-          </div>
+          </FlashNotice>
         )}
       </form>
     </section>
