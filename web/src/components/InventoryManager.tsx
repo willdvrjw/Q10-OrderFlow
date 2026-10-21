@@ -2,6 +2,7 @@ import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/s
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { ApiError, adjustInventory, getInventory } from '../lib/api';
+import { FlashNotice } from './FlashNotice';
 import type { InventoryOperation, InventoryStock, Product } from '../types';
 
 interface Props {
@@ -185,7 +186,12 @@ export function InventoryManager({ products, onStockUpdate, onStockUnavailable }
         </div>
       </div>
 
-      {loadError && <div className="notice error inventory-error" role="alert">{loadError}</div>}
+      {loadError && (
+        <FlashNotice tone="error" className="inventory-error"
+          onClose={() => setLoadError(null)}>
+          {loadError}
+        </FlashNotice>
+      )}
       <div className="inventory-layout">
         <div className="stock-list" aria-label="Existencias por producto">
           {loading ? (
@@ -269,7 +275,9 @@ export function InventoryManager({ products, onStockUpdate, onStockUnavailable }
             {saving ? 'Guardando ajuste...' : 'Guardar existencias'}
           </button>
           {feedback && (
-            <div className={'notice ' + feedback.kind} role="status" aria-live="polite">{feedback.text}</div>
+            <FlashNotice tone={feedback.kind} onClose={() => setFeedback(null)}>
+              {feedback.text}
+            </FlashNotice>
           )}
           <p className="inventory-disclaimer">Las existencias actualizadas se utilizarán para las reservas de pedidos nuevos o todavía pendientes de procesamiento.</p>
         </form>
