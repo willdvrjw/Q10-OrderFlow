@@ -26,15 +26,15 @@ Esta auditoría contrasta el código público con el enunciado de la prueba y di
 6. **Frontend:** formulario de pedidos, lista con estado actualizado, mensajes visibles y polling de respaldo. Alta de productos e inventario son extensiones que no alteran las transiciones requeridas.
 7. **Documentación:** arquitectura, trade-offs, arranque, pruebas, fallos y sección “Qué haría distinto con más tiempo”.
 
-## Acceso para evaluadores
+## Entrega oficial a evaluadores: Docker Compose
 
-**Código:** https://github.com/willdvrjw/Q10-OrderFlow
+**Repositorio público:** https://github.com/willdvrjw/Q10-OrderFlow
 
-**Codespace propio de cada evaluador:** https://codespaces.new/willdvrjw/Q10-OrderFlow?quickstart=1
+**Procedimiento único de ejecución:** descargar/clonar el proyecto, abrir la carpeta que contiene `compose.yaml`, iniciar Docker Engine y ejecutar `docker compose up`. Abrir http://localhost:8080 y verificar http://localhost:8080/health/ready. Ejecutar la suite con `docker compose --profile tests run --build --rm backend-tests`.
 
-**Docker local:** descargar/clonar, abrir la carpeta con compose.yaml, ejecutar docker compose up, visitar http://localhost:8080 y confirmar disponibilidad en http://localhost:8080/health/ready.
+La entrega no incluye GitHub Pages, Codespaces para cada evaluador, alojamiento permanente ni demo pública. **No hace falta enviar imágenes Docker separadas:** Compose utiliza los Dockerfiles incluidos en el repositorio para compilar la aplicación completa.
 
-El repositorio público **no significa** un servidor web permanente. Codespaces requiere GitHub y cuota; su puerto personal se mantiene privado por defecto. No hacer público un sistema con endpoints administrativos sin autenticación ni utilizar información real de terceros. Los volúmenes son persistentes; eliminar volúmenes destruye datos.
+El servicio se publica en loopback; las rutas de administración no incluyen autenticación porque el ejercicio no la exige. Los volúmenes mantienen pedidos, productos y existencias entre reinicios. No ejecutar `docker compose down -v` para conservarlos.
 
 ## Evidencias obtenidas
 
