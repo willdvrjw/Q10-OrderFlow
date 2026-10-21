@@ -1,6 +1,7 @@
 using Inventory.Worker.Application;
 using Inventory.Worker.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using OrderFlow.Contracts.Events;
 
 namespace OrderFlow.Tests;
@@ -82,5 +83,26 @@ public sealed class InventoryIntegrationTests
         Assert.True(stock >= 0);
         Assert.Equal(2, await verify.ProcessedOrders.CountAsync());
         Assert.Equal(2, await verify.OutboxMessages.CountAsync());
+
+        // Un ajuste hecho con el stock anterior no puede pisar una reserva
+        // concurrente. Comprobamos además el ingreso y el reemplazo válidos.
+        var management = new InventoryManagementService(
+            verify, NullLogger<InventoryManagementService>.Instance);
+        var stale = await management.ApplyAsync(
+            "TEST-RACE", "establecer", 5, 5, CancellationToken.None);
+        Assert.Equal(AdjustmentOutcome.Conflict, stale.Outcome);
+        Assert.Equal(1, stale.Disponible);
+
+        var added = await management.ApplyAsync(
+            "TEST-RACE", "agregar", 10, 1, CancellationToken.None);
+        Assert.Equal(AdjustmentOutcome.Applied, added.Outcome);
+        Assert.Equal(11, added.Disponible);
+
+        var set = await management.ApplyAsync(
+            "TEST-RACE", "establecer", 3, 11, CancellationToken.None);
+        Assert.Equal(AdjustmentOutcome.Applied, set.Outcome);
+        Assert.Equal(3, await verify.Stock.AsNoTracking()
+            .Where(item => item.Sku == "TEST-RACE")
+            .Select(item => item.Disponible).SingleAsync());
     }
 }
