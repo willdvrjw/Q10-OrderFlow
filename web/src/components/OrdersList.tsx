@@ -150,7 +150,7 @@ export function OrdersList({
                         canRepeat ? (
                           <span className="reason replenished"
                             title={'Motivo histórico del rechazo: ' + order.motivoRechazo}>
-                            Inventario repuesto · {available.toLocaleString('es-CO')} unidades disponibles
+                            Inventario repuesto · {available?.toLocaleString('es-CO')} unidades disponibles
                           </span>
                         ) : (
                           <span className="reason" title={order.motivoRechazo}>
