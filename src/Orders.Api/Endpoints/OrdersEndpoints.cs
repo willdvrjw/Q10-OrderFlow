@@ -28,7 +28,18 @@ public static class OrdersEndpoints
         OrdersDbContext db,
         CancellationToken cancellationToken)
     {
-        var errors = OrderValidator.Validate(request, catalog.Skus);
+        // La validación de Q10 sigue siendo idéntica: solo acepta SKU del
+        // catálogo. Ahora este incluye los registrados y persistidos por Orders.
+        IReadOnlyCollection<string> validSkus = catalog.Skus;
+        if (!string.IsNullOrWhiteSpace(request?.Sku) && !catalog.Contains(request.Sku))
+        {
+            var normalized = request.Sku.Trim().ToUpperInvariant();
+            if (await db.CatalogProducts.AsNoTracking()
+                .AnyAsync(product => product.Sku == normalized, cancellationToken))
+                validSkus = catalog.Skus.Concat([normalized]).ToArray();
+        }
+
+        var errors = OrderValidator.Validate(request, validSkus);
         if (errors.Count != 0)
             return Results.ValidationProblem(errors.ToDictionary(k => k.Key, v => v.Value));
 
