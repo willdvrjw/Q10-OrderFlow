@@ -45,10 +45,18 @@ El repositorio público **no significa** un servidor web permanente. Codespaces 
 - Nginx con DNS interno de Docker: HTTP 200 en salud, catálogo e inventario tras recrear servicios. En la última QA portable (21/10), hubo errores transitorios y dos reinicios de cada backend antes de recuperar HTTP 200 en `/health/ready`; no se presenta la primera ejecución como libre de incidencias.
 - Diseño móvil y escritorio aprobado expresamente por el usuario; no se simuló la creación de cientos de productos.
 
+## QA de salida tras la actualización de accesibilidad y arranque
+
+**21/10/2026 — verificación real desde la rama de auditoría en GitHub Codespaces:** el usuario proporcionó la salida de `docker compose ps` con los cinco servicios activos y el servicio `web` en estado **healthy**. `GET /health/ready` devolvió `{"status":"ready"}`. Los recursos `GET /products` y `GET /inventory` respondieron correctamente e incluyeron `FRP` con **15 unidades disponibles** además de los tres SKU iniciales.
+
+`docker compose --profile tests run --build --rm backend-tests` ejecutó la suite completa con **7 tests aprobados, 0 fallidos y 0 omitidos**. La salida confirmó compilación de los cinco proyectos .NET, `nginx -t` satisfactorio y repositorio local sin cambios pendientes.
+
+**Limitación explícita:** antes de recuperarse, los dos servicios backend sufrieron reinicios transitorios y Nginx devolvió inicialmente 504/502. La ejecución final demostró funcionamiento y recuperación, pero no certifica arranque sin incidencias en todos los equipos ni rendimiento determinado. Tampoco valida todavía un dominio público estable que aloje la interfaz.
+
 ## Pendientes que no deben presentarse como aprobados
 
 - Arranque limpio de Windows/macOS/Linux fuera de Codespaces y tiempo real de inicio; revisión de Chrome/Edge/Firefox/Safari en diferentes SO.
-- Revisión del nuevo healthcheck con Docker desde el entorno del evaluador, y del puerto local alternativo.
+- Prueba del puerto alternativo, del nuevo enlace de Codespaces desde otra cuenta y del arranque en un host Docker externo. En Codespaces, el healthcheck local sí llegó a `healthy` después de resolver los problemas transitorios.
 - Inyección de caída entre COMMIT y ACK, negociación de WebSocket tras el último ajuste de Nginx y polling de inventario con SignalR bloqueado.
 - Investigación de la advertencia de canal asíncrono de Chrome en un navegador sin extensiones.
 - Prueba con centenares de SKU, entorno público hospedado y despliegue Kubernetes real.
