@@ -5,6 +5,23 @@ using Inventory.Worker.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using OrderFlow.Messaging;
 
+// Docker invoca esta ruta liviana para comprobar HTTP y PostgreSQL reales.
+// No inicia otro servidor ni ejecuta operaciones de negocio.
+if (args.Length == 1 && args[0] == "--healthcheck")
+{
+    using var healthClient = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+    try
+    {
+        using var response = await healthClient.GetAsync("http://127.0.0.1:8081/health/ready");
+        Environment.ExitCode = response.IsSuccessStatusCode ? 0 : 1;
+    }
+    catch (Exception)
+    {
+        Environment.ExitCode = 1;
+    }
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("Inventory")
