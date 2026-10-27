@@ -1,0 +1,53 @@
+name: Docker reproducible e integracion E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docker-integration:
+    name: Docker limpio + 7 pruebas + reinicio
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Verificar Docker y Compose
+        run: |
+          docker version
+          docker compose version
+          docker compose config --quiet
+
+      - name: Construir e iniciar en entorno limpio sin modificar firewall
+        run: docker compose up -d --build --wait --wait-timeout 240
+
+      - name: Verificar interfaz, APIs, producto, inventario y pedido
+        run: python3 scripts/smoke_test.py --evidence /tmp/orderflow-ci-evidence.json
+
+      - name: Ejecutar suite real de siete pruebas sobre PostgreSQL
+        run: docker compose --profile tests run --build --rm backend-tests
+
+      - name: Reiniciar servicios conservando bases y broker
+        run: |
+          docker compose restart postgres rabbitmq orders-api inventory-worker web
+          docker compose up -d --wait --wait-timeout 240
+
+      - name: Comprobar persistencia real tras reinicio
+        run: python3 scripts/smoke_test.py --verify --evidence /tmp/orderflow-ci-evidence.json
+
+      - name: Mostrar servicios y logs cuando falla una validacion
+        if: failure()
+        run: |
+          docker compose ps -a
+          docker compose logs --no-color --tail=180
+
+      - name: Detener sin borrar volumenes
+        if: always()
+        run: docker compose down

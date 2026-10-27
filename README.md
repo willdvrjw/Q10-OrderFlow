@@ -217,3 +217,53 @@ Reemplazar inicialización de esquemas por migraciones; introducir privilegios m
 - docs/10_AUDITORIA_QA_ENTREGA.md: matriz ponderada, trazabilidad y límites honestos de compatibilidad.
 
 **Alcance de validación:** el sistema se ejecutó desde una copia nueva dentro de GitHub Codespaces, con volúmenes independientes. El firewall específico de ese entorno requirió un ajuste local de conectividad entre contenedores. No se ha probado todavía en un host Docker diferente. La emulación responsive original se verificó a 530 × 710. Para la ampliación del inventario el usuario confirmó visualmente la vista móvil a 390 px sin aportar nueva captura; no equivale a un ensayo independiente de estrés con muchos SKU. Kubernetes se verificó mediante Kustomize, sin clúster. Ver `docs/09_EVIDENCIAS_VALIDACION.md`.
+
+
+## QA reproducible de Docker y Codespaces — actualización de octubre de 2026
+
+La interfaz React cargando **no basta para declarar la aplicación saludable**:
+pedidos, catálogo e inventario deben responder desde los dos backends. Compose
+incluye healthchecks reales para PostgreSQL (dos bases), RabbitMQ, Orders API,
+Inventory Worker y el proxy web. No se corrigen firewalls del host mediante
+scripts del proyecto ni se exponen las API de administración a Internet.
+
+**Arranque recomendado desde un clon limpio:**
+
+~~~bash
+docker compose config --quiet
+docker compose up -d --build --wait --wait-timeout 240
+~~~
+
+La instrucción obligatoria de Q10, docker compose up, continúa siendo válida.
+La opción --wait espera que los servicios estén saludables y falla si no lo
+consiguen; es la forma recomendada de confirmar el estado antes de mostrar
+la demo. Consultar http://127.0.0.1:8080/health/ready y
+http://127.0.0.1:8080/inventory/health/ready; ambas deben devolver
+{"status":"ready"}.
+
+**Control automático independiente:** .github/workflows/docker-qa.yml prueba
+en GitHub Actions un checkout nuevo, la compilación con Docker Compose, una
+operación completa de producto y pedido, el bloqueo del SKU duplicado (409),
+la suite de siete tests backend y la persistencia tras reiniciar. Consultar
+la pestaña **Actions** antes de afirmar que una versión concreta pasó. Una
+prueba fallida bloquea la evidencia de entrega; no sustituirla por capturas.
+
+**Codespaces:** .devcontainer/devcontainer.json configura un Docker Engine
+aislado mediante la característica oficial Docker-in-Docker. Un nuevo Codespace
+inicia los servicios automáticamente con scripts/codespaces-start.sh y
+ofrece el puerto 8080 en una vista previa **privada**. No es alojamiento
+permanente: el Codespace se detiene con la sesión o por inactividad. Una
+instancia anterior necesita una reconstrucción para adoptar este entorno;
+**no reconstruyas un Codespace con volúmenes históricos importantes sin
+respaldar primero las bases y colas**, pues cambiar de Docker Engine puede
+hacer que los volúmenes anteriores no aparezcan en el nuevo entorno.
+Lo más seguro para una demostración limpia es crear un Codespace nuevo sin
+intervenir el anterior.
+
+Si una instancia muestra la interfaz pero falla el backend, obtener evidencias
+sin cambiar nada con bash scripts/doctor.sh. El diagnóstico del host,
+limitaciones y criterios medibles se explican en
+[11. Reproducibilidad Docker y Codespaces](docs/11_REPRODUCIBILIDAD_DOCKER.md).
+
+**Datos:** no ejecutar docker compose down -v; elimina los volúmenes de
+PostgreSQL y RabbitMQ. docker compose down sin -v los conserva.
