@@ -13,7 +13,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./infra/postgres/01-create-databases.sql:/docker-entrypoint-initdb.d/01-create-databases.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U orderflow -d postgres"]
+      # Comprobar conexión TCP real y ambas bases creadas por los init scripts.
+      # pg_isready por socket local puede responder durante la inicialización.
+      test: ["CMD-SHELL", "PGPASSWORD=\"$${POSTGRES_PASSWORD}\" psql -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d orderflow_orders -tAc 'SELECT 1' >/dev/null && PGPASSWORD=\"$${POSTGRES_PASSWORD}\" psql -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d orderflow_inventory -tAc 'SELECT 1' >/dev/null"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -52,7 +54,15 @@ services:
       postgres:
         condition: service_healthy
       rabbitmq:
-        condition: service_started
+        condition: service_healthy
+
+    # La API solo está healthy si responde realmente y su base es accesible.
+    healthcheck:
+      test: ["CMD", "dotnet", "Orders.Api.dll", "--healthcheck"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 75s
 
   inventory-worker:
     build:
@@ -71,7 +81,14 @@ services:
       postgres:
         condition: service_healthy
       rabbitmq:
-        condition: service_started
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD", "dotnet", "Inventory.Worker.dll", "--healthcheck"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 75s
 
   web:
     build:
@@ -85,16 +102,18 @@ services:
     # Muestra el estado real en docker compose ps mientras el backend termina
     # de preparar las tablas y el catálogo. Nginx Alpine incluye BusyBox wget.
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health/ready"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health/ready && wget -q -O /dev/null http://127.0.0.1/inventory/health/ready"]
       interval: 5s
       timeout: 3s
       retries: 12
       start_period: 60s
     depends_on:
       orders-api:
-        condition: service_started
+        condition: service_healthy
+        restart: true
       inventory-worker:
-        condition: service_started
+        condition: service_healthy
+        restart: true
 
   # Siete pruebas reales: tres de dominio y cuatro de integración sobre PostgreSQL.
   # No participa del arranque por defecto ni modifica las bases de los servicios.
